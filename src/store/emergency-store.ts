@@ -24,7 +24,7 @@ export type PipelineStage =
   | "resolved";
 
 export type ArrivalPhase = "countdown" | "arriving" | "arrived";
-export type CommandCentre = "ambulance" | "fire";
+export type CommandCentre = "ambulance" | "garda" | "fire";
 
 interface EmergencyState {
   viewMode: ViewMode;
