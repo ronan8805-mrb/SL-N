@@ -1,60 +1,58 @@
 "use client";
 
 import { motion } from "framer-motion";
-import {
-  Rocket,
-  MapPinned,
-  CheckCircle,
-  UserPlus,
-} from "lucide-react";
+import { Rocket, MapPinned, CheckCircle, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export function ActionButtons() {
   const { incident, setPipelineStage, addGuardian, pipelineStage } =
     useEmergencyStore();
+  const theme = useCommandCentreTheme();
 
   if (!incident) return null;
 
   const actions = [
     {
-      label: "Dispatch Nearest",
+      label: theme.actions.dispatch,
       icon: Rocket,
       variant: "default" as const,
       onClick: () => {
         setPipelineStage("dispatched");
-        toast.success("Nearest units dispatched");
+        toast.success(theme.actions.dispatchToast);
       },
       disabled: pipelineStage !== "verified" && pipelineStage !== "received",
     },
     {
-      label: "Mark Arrived",
+      label: theme.actions.arrived,
       icon: MapPinned,
       variant: "outline" as const,
       onClick: () => {
         setPipelineStage("arrived");
-        toast.success("Units marked as arrived on scene");
+        toast.success(theme.actions.arrivedToast);
       },
       disabled: pipelineStage !== "en_route" && pipelineStage !== "dispatched",
     },
     {
-      label: "Resolved",
+      label: theme.actions.resolved,
       icon: CheckCircle,
       variant: "default" as const,
       onClick: () => {
         setPipelineStage("resolved");
-        toast.success("Incident marked as resolved");
+        toast.success(theme.actions.resolvedToast);
       },
       disabled: pipelineStage === "resolved",
     },
     {
-      label: "Add Guardian",
+      label: theme.actions.secondary,
       icon: UserPlus,
       variant: "outline" as const,
       onClick: () => {
         addGuardian("Seán Murphy (Brother)");
-        toast.info("Guardian notified: Seán Murphy");
+        toast.info(theme.actions.secondaryToast);
       },
       disabled: false,
     },
@@ -75,9 +73,12 @@ export function ActionButtons() {
             variant={action.variant}
             onClick={action.onClick}
             disabled={action.disabled}
-            className="w-full h-auto py-3 flex-col gap-1.5"
+            className={cn(
+              "w-full h-auto py-3 flex-col gap-1.5",
+              action.variant === "default" && theme.bg.replace("/20", "/30")
+            )}
           >
-            <action.icon className="w-5 h-5" />
+            <action.icon className={cn("w-5 h-5", theme.accent)} />
             <span className="text-xs">{action.label}</span>
           </Button>
         </motion.div>

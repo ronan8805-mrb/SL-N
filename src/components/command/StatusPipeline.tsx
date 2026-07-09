@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { PIPELINE_STAGES } from "@/lib/sample-data";
 import { useEmergencyStore, type PipelineStage } from "@/store/emergency-store";
+import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
 import { cn } from "@/lib/utils";
 
 const stageOrder: PipelineStage[] = [
@@ -16,17 +17,19 @@ const stageOrder: PipelineStage[] = [
 
 export function StatusPipeline() {
   const { pipelineStage, incident } = useEmergencyStore();
+  const theme = useCommandCentreTheme();
   const currentIndex = stageOrder.indexOf(pipelineStage);
 
   return (
     <div className="glass rounded-2xl p-4">
-      <h3 className="text-sm font-semibold mb-4">Status Pipeline</h3>
+      <h3 className={cn("text-sm font-semibold mb-4", theme.accent)}>
+        {theme.pipelineTitle}
+      </h3>
 
       <div className="relative">
-        {/* Progress bar background */}
         <div className="absolute top-5 left-5 right-5 h-0.5 bg-white/10" />
         <motion.div
-          className="absolute top-5 left-5 h-0.5 bg-emerald"
+          className={cn("absolute top-5 left-5 h-0.5", theme.pipelineBar)}
           initial={{ width: 0 }}
           animate={{
             width: incident
@@ -54,12 +57,12 @@ export function StatusPipeline() {
                   className={cn(
                     "w-10 h-10 rounded-full flex items-center justify-center text-sm border-2 transition-all",
                     isActive
-                      ? "bg-emerald/20 border-emerald text-emerald-glow"
+                      ? theme.pipelineActive
                       : "bg-white/5 border-white/10 text-white/30"
                   )}
                   animate={
                     isCurrent
-                      ? { scale: [1, 1.1, 1], boxShadow: ["0 0 0 0 rgba(16,185,129,0)", "0 0 20px rgba(16,185,129,0.4)", "0 0 0 0 rgba(16,185,129,0)"] }
+                      ? { scale: [1, 1.1, 1] }
                       : {}
                   }
                   transition={{ repeat: isCurrent ? Infinity : 0, duration: 2 }}
@@ -69,7 +72,7 @@ export function StatusPipeline() {
                 <span
                   className={cn(
                     "text-[9px] font-medium text-center max-w-[60px]",
-                    isActive ? "text-emerald-glow" : "text-white/30"
+                    isActive ? theme.pipelineText : "text-white/30"
                   )}
                 >
                   {stage.label}

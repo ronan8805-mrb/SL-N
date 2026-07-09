@@ -4,10 +4,13 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Navigation } from "lucide-react";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
+import { cn } from "@/lib/utils";
 
 export function LiveMap() {
   const { location, incident, updateLocation, pipelineStage } =
     useEmergencyStore();
+  const theme = useCommandCentreTheme();
 
   useEffect(() => {
     if (!incident) return;
@@ -22,31 +25,41 @@ export function LiveMap() {
   return (
     <div className="glass rounded-2xl overflow-hidden h-full min-h-[280px] relative">
       <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
-        <Navigation className="w-4 h-4 text-emerald-glow" />
-        <span className="text-xs font-semibold">Live Tracking</span>
+        <Navigation className={cn("w-4 h-4", theme.accent)} />
+        <span className="text-xs font-semibold">{theme.mapTitle}</span>
         {incident && (
           <motion.span
             animate={{ opacity: [1, 0.4, 1] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
-            className="text-[9px] bg-emerald/30 text-emerald-glow px-2 py-0.5 rounded-full font-bold"
+            className={cn(
+              "text-[9px] px-2 py-0.5 rounded-full font-bold",
+              theme.liveBadge
+            )}
           >
             LIVE
           </motion.span>
         )}
       </div>
 
-      <div className="absolute inset-0 map-grid">
-        {/* Roads */}
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `linear-gradient(${theme.mapGrid} 1px, transparent 1px), linear-gradient(90deg, ${theme.mapGrid} 1px, transparent 1px)`,
+          backgroundSize: "40px 40px",
+        }}
+      >
         <div className="absolute top-1/2 left-0 right-0 h-px bg-white/5" />
         <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/5" />
         <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/5" />
         <div className="absolute top-1/3 left-0 right-0 h-px bg-white/5" />
         <div className="absolute top-2/3 left-0 right-0 h-px bg-white/5" />
 
-        {/* Ambulance route animation */}
         {pipelineStage === "en_route" && (
           <motion.div
-            className="absolute w-3 h-3 rounded-full bg-blue-400 shadow-lg shadow-blue-400/50"
+            className={cn(
+              "absolute w-3 h-3 rounded-full shadow-lg",
+              theme.unitColor
+            )}
             animate={{
               left: ["20%", "35%", "45%", "47%"],
               top: ["70%", "55%", "45%", "43%"],
@@ -55,7 +68,6 @@ export function LiveMap() {
           />
         )}
 
-        {/* Citizen marker */}
         <motion.div
           className="absolute z-10"
           animate={{

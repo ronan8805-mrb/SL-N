@@ -12,6 +12,8 @@ import {
 import { SAMPLE_CITIZEN } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
 import { VoiceNotePlayer } from "@/components/shared/VoiceNotePlayer";
+import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
+import { cn } from "@/lib/utils";
 
 export function DataPacketCard() {
   const {
@@ -23,6 +25,7 @@ export function DataPacketCard() {
     isPlayingVoice,
     setIsPlayingVoice,
   } = useEmergencyStore();
+  const theme = useCommandCentreTheme();
 
   if (!incident) {
     return (
@@ -43,15 +46,20 @@ export function DataPacketCard() {
     >
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold">Emergency Data Packet</h3>
-        <span className="text-[10px] bg-emerald/20 text-emerald-glow px-2 py-0.5 rounded-full font-bold">
-          COMPLETE
+        <span
+          className={cn(
+            "text-[10px] px-2 py-0.5 rounded-full font-bold",
+            theme.liveBadge
+          )}
+        >
+          {theme.packetBadge}
         </span>
       </div>
 
       {/* Citizen info */}
-      <div className="flex items-center gap-3 bg-white/5 rounded-xl p-3">
-        <div className="w-10 h-10 rounded-full bg-emerald/20 flex items-center justify-center">
-          <User className="w-5 h-5 text-emerald-glow" />
+      <div className={cn("flex items-center gap-3 bg-white/5 rounded-xl p-3 border", theme.border)}>
+        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", theme.bg)}>
+          <User className={cn("w-5 h-5", theme.accent)} />
         </div>
         <div>
           <p className="font-semibold text-sm">{SAMPLE_CITIZEN.name}</p>

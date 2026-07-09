@@ -4,10 +4,13 @@ import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Send } from "lucide-react";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function ChatSimulation() {
   const { chatMessages, incident, addChatMessage } = useEmergencyStore();
+  const theme = useCommandCentreTheme();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -17,16 +20,19 @@ export function ChatSimulation() {
   }, [chatMessages]);
 
   const handleSend = () => {
-    addChatMessage("operator", "We're tracking your location. Help is close.");
+    addChatMessage("operator", theme.quickResponse);
+    toast.success(theme.quickResponseToast);
   };
 
   return (
     <div className="glass rounded-2xl p-4 h-full flex flex-col">
       <div className="flex items-center gap-2 mb-3">
-        <MessageCircle className="w-4 h-4 text-emerald-glow" />
-        <h3 className="text-sm font-semibold">Citizen Chat</h3>
+        <MessageCircle className={cn("w-4 h-4", theme.accent)} />
+        <h3 className="text-sm font-semibold">{theme.chatTitle}</h3>
         {incident && (
-          <span className="text-[9px] text-emerald font-bold ml-auto">CONNECTED</span>
+          <span className={cn("text-[9px] font-bold ml-auto", theme.accentGlow)}>
+            CONNECTED
+          </span>
         )}
       </div>
 
@@ -50,7 +56,7 @@ export function ChatSimulation() {
                   msg.sender === "citizen"
                     ? "bg-white/10 ml-auto rounded-br-sm"
                     : msg.sender === "operator"
-                    ? "bg-emerald/20 mr-auto rounded-bl-sm"
+                    ? cn(theme.chatBubble, "mr-auto rounded-bl-sm")
                     : "bg-white/5 mx-auto text-center text-white/40 text-[10px]"
                 )}
               >
@@ -72,10 +78,13 @@ export function ChatSimulation() {
       <button
         onClick={handleSend}
         disabled={!incident}
-        className="flex items-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white/5 border border-white/10 text-sm text-white/60 hover:bg-white/10 transition-colors disabled:opacity-30"
+        className={cn(
+          "flex items-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white/5 border text-sm text-white/60 hover:bg-white/10 transition-colors disabled:opacity-30",
+          theme.border
+        )}
       >
-        <span className="flex-1 text-left text-xs">Send quick response…</span>
-        <Send className="w-4 h-4" />
+        <span className="flex-1 text-left text-xs">{theme.chatPlaceholder}</span>
+        <Send className={cn("w-4 h-4", theme.accent)} />
       </button>
     </div>
   );

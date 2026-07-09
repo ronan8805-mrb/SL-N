@@ -4,16 +4,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Clock } from "lucide-react";
 import { SERVICES } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
 import { cn } from "@/lib/utils";
 
 export function IncidentFeed() {
   const { incident, pipelineStage } = useEmergencyStore();
+  const theme = useCommandCentreTheme();
 
   const feedItems = incident
     ? [
         {
           id: incident.id,
-          title: `${incident.citizenName} — Emergency`,
+          title: `${incident.citizenName} — ${theme.incidentSuffix}`,
           severity: incident.severity,
           services: incident.services,
           time: incident.timestamp.toLocaleTimeString("en-IE"),
@@ -25,13 +27,18 @@ export function IncidentFeed() {
   return (
     <div className="glass rounded-2xl p-4 h-full">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-sm font-semibold">Live Incident Feed</h3>
+        <h3 className={cn("text-sm font-semibold", theme.accent)}>
+          {theme.feedTitle}
+        </h3>
         <motion.span
           animate={{ opacity: [1, 0.3, 1] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          className="flex items-center gap-1.5 text-[10px] text-emerald font-bold"
+          className={cn(
+            "flex items-center gap-1.5 text-[10px] font-bold",
+            theme.accentGlow
+          )}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald" />
+          <span className={cn("w-1.5 h-1.5 rounded-full", theme.liveDot)} />
           LIVE
         </motion.span>
       </div>
@@ -44,8 +51,8 @@ export function IncidentFeed() {
               animate={{ opacity: 1 }}
               className="text-center py-12 text-white/30 text-sm"
             >
-              <AlertTriangle className="w-8 h-8 mx-auto mb-3 opacity-30" />
-              Awaiting incidents…
+              <AlertTriangle className={cn("w-8 h-8 mx-auto mb-3 opacity-30", theme.accent)} />
+              {theme.feedEmpty}
               <p className="text-[11px] mt-2">Run the citizen demo to see live feed</p>
             </motion.div>
           ) : (
@@ -54,7 +61,11 @@ export function IncidentFeed() {
                 key={item.id}
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                className="bg-white/5 rounded-xl p-4 border border-emerald/20 hover:border-emerald/40 transition-colors"
+                className={cn(
+                  "bg-white/5 rounded-xl p-4 border transition-colors",
+                  theme.cardBorder,
+                  theme.cardHover
+                )}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
@@ -89,7 +100,7 @@ export function IncidentFeed() {
                     <Clock className="w-3 h-3" />
                     {item.time}
                   </span>
-                  <span className="text-emerald-glow font-medium uppercase">
+                  <span className={cn("font-medium uppercase", theme.accentGlow)}>
                     {item.status.replace("_", " ")}
                   </span>
                 </div>
