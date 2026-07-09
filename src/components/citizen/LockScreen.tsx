@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import { Wifi, Battery, Signal } from "lucide-react";
 import { RescueButton } from "./RescueButton";
-import { SwipeGestures } from "./SwipeGestures";
 
 export function LockScreen() {
   const now = new Date();
@@ -19,7 +18,6 @@ export function LockScreen() {
 
   return (
     <div className="flex flex-col items-center justify-between h-full min-h-[500px] py-8">
-      {/* Status bar */}
       <div className="w-full flex items-center justify-between px-6 text-[10px] text-white/50">
         <span className="font-semibold">SLÁN</span>
         <div className="flex items-center gap-2">
@@ -29,7 +27,6 @@ export function LockScreen() {
         </div>
       </div>
 
-      {/* Clock */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -39,28 +36,19 @@ export function LockScreen() {
         <p className="text-sm text-white/40 mt-1">{date}</p>
       </motion.div>
 
-      {/* Rescue Button */}
       <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.3, type: "spring" }}
+        className="flex flex-col items-center gap-4"
       >
         <RescueButton />
+        <p className="text-[11px] text-white/35 text-center max-w-[220px]">
+          One tap · Swipe triage · Help in seconds
+        </p>
       </motion.div>
 
-      {/* Swipe Gestures */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="w-full"
-      >
-        <SwipeGestures />
-      </motion.div>
-
-      <p className="text-[10px] text-white/25 text-center px-8">
-        Slide up to unlock · Swipe directions to select services
-      </p>
+      <div className="h-16" />
     </div>
   );
 }

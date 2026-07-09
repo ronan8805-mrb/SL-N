@@ -41,6 +41,9 @@ interface EmergencyState {
   demoSpeed: "slan" | "traditional";
   chatMessages: { id: string; sender: string; text: string; time: string }[];
   guardians: string[];
+  isDispatched: boolean;
+  privateMessage: string;
+  citizenChatMessages: { id: string; sender: "citizen" | "operator"; text: string; time: string }[];
 
   setViewMode: (mode: ViewMode) => void;
   setCitizenStep: (step: CitizenStep) => void;
@@ -61,6 +64,10 @@ interface EmergencyState {
   resetDemo: () => void;
   addGuardian: (name: string) => void;
   addChatMessage: (sender: string, text: string) => void;
+  setPrivateMessage: (msg: string) => void;
+  addCitizenChatMessage: (text: string) => void;
+  goToCommunications: () => void;
+  goToDispatchStatus: () => void;
 }
 
 const initialConfirmations: Record<ServiceType, boolean | null> = {
@@ -89,6 +96,9 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
   demoSpeed: "slan",
   chatMessages: [],
   guardians: [],
+  isDispatched: false,
+  privateMessage: "",
+  citizenChatMessages: [],
 
   setViewMode: (mode) => set({ viewMode: mode }),
   setCitizenStep: (step) => set({ citizenStep: step }),
@@ -134,6 +144,7 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
     };
     set({
       incident,
+      isDispatched: true,
       citizenStep: "dispatched",
       pipelineStage: "dispatched",
       responseTime: get().demoSpeed === "slan" ? 2.1 : 18.4,
@@ -148,6 +159,12 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       serviceConfirmations: { ...initialConfirmations },
       countdown: 14,
       isDemoRunning: false,
+      isDispatched: false,
+      incident: null,
+      privateMessage: "",
+      citizenChatMessages: [],
+      responseTime: 0,
+      pipelineStage: "received",
     }),
 
   resetDemo: () =>
@@ -166,7 +183,10 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       incident: null,
       pipelineStage: "received",
       isDemoRunning: false,
+      isDispatched: false,
+      privateMessage: "",
       chatMessages: [],
+      citizenChatMessages: [],
       guardians: [],
     }),
 
@@ -189,4 +209,33 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
         },
       ],
     })),
+
+  setPrivateMessage: (msg) => set({ privateMessage: msg }),
+
+  addCitizenChatMessage: (text) =>
+    set((s) => {
+      const time = new Date().toLocaleTimeString("en-IE", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      const citizenMsg = {
+        id: Date.now().toString(),
+        sender: "citizen" as const,
+        text,
+        time,
+      };
+      const operatorReply = {
+        id: (Date.now() + 1).toString(),
+        sender: "operator" as const,
+        text: "Received. We're monitoring your location and data packet. Help is en route.",
+        time,
+      };
+      return {
+        citizenChatMessages: [...s.citizenChatMessages, citizenMsg, operatorReply],
+      };
+    }),
+
+  goToCommunications: () => set({ citizenStep: "data" }),
+  goToDispatchStatus: () => set({ citizenStep: "dispatched" }),
 }));

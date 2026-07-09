@@ -17,7 +17,6 @@ export function useDemoSequence() {
 
     toast.info("Starting cinematic demo sequence…", { duration: 2000 });
 
-    // Citizen flow
     store.setViewMode("citizen");
     await delay(800);
 
@@ -28,7 +27,7 @@ export function useDemoSequence() {
     if (!useEmergencyStore.getState().selectedServices.includes("garda")) {
       store.toggleService("garda");
     }
-    await delay(1500);
+    await delay(2000);
 
     store.setCitizenStep("confirm");
     store.setCountdown(14);
@@ -37,19 +36,24 @@ export function useDemoSequence() {
     store.confirmService("ambulance", true);
     await delay(600);
     store.confirmService("garda", true);
-    await delay(800);
+    await delay(1000);
 
     store.setCitizenStep("data");
     store.setIsRecording(true);
-    await delay(1000);
+    store.setPrivateMessage("Chest feels tight, mild asthma — need inhaler");
+    await delay(2000);
     store.setIsRecording(false);
-    await delay(800);
+    store.addCitizenChatMessage("I can't breathe properly");
+    await delay(3500); // wait for auto-dispatch
 
-    store.dispatchEmergency();
     toast.success("Help dispatched in 2.1 seconds!", { duration: 3000 });
-    await delay(2500);
+    await delay(3000);
 
-    // Switch to command
+    store.goToCommunications();
+    await delay(1500);
+    store.goToDispatchStatus();
+    await delay(1000);
+
     store.setViewMode("command");
     await delay(600);
 
@@ -82,14 +86,14 @@ export function useDemoSequence() {
     if (!useEmergencyStore.getState().selectedServices.includes("garda")) {
       store.toggleService("garda");
     }
-    await delay(1000);
+    await delay(1500);
     store.setCitizenStep("confirm");
     store.confirmService("ambulance", true);
     store.confirmService("garda", true);
-    await delay(800);
+    await delay(1000);
     store.setCitizenStep("data");
-    await delay(1200);
-    store.dispatchEmergency();
+    store.setPrivateMessage("Emergency — need immediate assistance");
+    await delay(3500); // wait for auto-dispatch
     store.setIsDemoRunning(false);
   }, [store]);
 

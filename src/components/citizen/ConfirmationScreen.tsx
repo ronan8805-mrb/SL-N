@@ -16,35 +16,52 @@ export function ConfirmationScreen() {
     setCountdown,
     setCitizenStep,
     cancelAll,
-    dispatchEmergency,
   } = useEmergencyStore();
 
   const services = SERVICES.filter((s) => selectedServices.includes(s.id));
+  const acceptedServices = services.filter(
+    (s) => serviceConfirmations[s.id] === true
+  );
   const allConfirmed = services.every(
     (s) => serviceConfirmations[s.id] !== null
   );
-  const allAccepted = services.every(
+  const allAccepted = services.length > 0 && services.every(
     (s) => serviceConfirmations[s.id] === true
+  );
+  const anyRejected = services.some(
+    (s) => serviceConfirmations[s.id] === false
   );
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const current = useEmergencyStore.getState().countdown;
-      if (current <= 1) {
+      const state = useEmergencyStore.getState();
+      if (state.countdown <= 1) {
         clearInterval(timer);
+        const accepted = SERVICES.filter(
+          (s) =>
+            state.selectedServices.includes(s.id) &&
+            state.serviceConfirmations[s.id] === true
+        );
+        if (accepted.length > 0) {
+          setCitizenStep("data");
+        }
         return;
       }
-      setCountdown(current - 1);
+      setCountdown(state.countdown - 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [setCountdown]);
+  }, [setCountdown, setCitizenStep]);
 
   useEffect(() => {
-    if (allConfirmed && allAccepted) {
-      const t = setTimeout(() => setCitizenStep("data"), 800);
+    if (allConfirmed && acceptedServices.length > 0 && !anyRejected) {
+      const t = setTimeout(() => setCitizenStep("data"), 600);
       return () => clearTimeout(t);
     }
-  }, [allConfirmed, allAccepted, setCitizenStep]);
+    if (allConfirmed && anyRejected && acceptedServices.length > 0) {
+      const t = setTimeout(() => setCitizenStep("data"), 600);
+      return () => clearTimeout(t);
+    }
+  }, [allConfirmed, anyRejected, acceptedServices.length, setCitizenStep]);
 
   const circumference = 2 * Math.PI * 54;
   const progress = ((14 - countdown) / 14) * circumference;
@@ -56,7 +73,10 @@ export function ConfirmationScreen() {
       className="flex flex-col items-center w-full px-4"
     >
       <p className="text-sm text-white/50 mb-2 text-center">
-        Two-stage confirmation — prevent false alarms
+        Confirm each service — false alarm prevention
+      </p>
+      <p className="text-[10px] text-white/30 mb-4 text-center">
+        Tap ✓ to confirm or ✗ to cancel each service
       </p>
 
       <div className="relative w-32 h-32 mb-6">
@@ -156,6 +176,16 @@ export function ConfirmationScreen() {
           );
         })}
       </div>
+
+      {allAccepted && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-[11px] text-emerald-glow mt-4"
+        >
+          All confirmed — preparing data packet…
+        </motion.p>
+      )}
 
       <motion.button
         whileTap={{ scale: 0.95 }}

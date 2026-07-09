@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   MapPin,
@@ -11,10 +11,15 @@ import {
   Play,
   Pause,
   Square,
+  MessageSquare,
+  Send,
+  Clock,
+  ChevronLeft,
 } from "lucide-react";
 import { SAMPLE_CITIZEN } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function DataPacketPreview() {
@@ -30,7 +35,19 @@ export function DataPacketPreview() {
     setIsPlayingVoice,
     updateLocation,
     dispatchEmergency,
+    isDispatched,
+    privateMessage,
+    setPrivateMessage,
+    citizenChatMessages,
+    addCitizenChatMessage,
+    goToDispatchStatus,
+    eta,
+    responseTime,
   } = useEmergencyStore();
+
+  const [chatInput, setChatInput] = useState("");
+  const [autoDispatchCountdown, setAutoDispatchCountdown] = useState(3);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -42,28 +59,84 @@ export function DataPacketPreview() {
   }, [updateLocation]);
 
   useEffect(() => {
-    const timer = setTimeout(() => dispatchEmergency(), 4000);
-    return () => clearTimeout(timer);
-  }, [dispatchEmergency]);
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [citizenChatMessages]);
+
+  // Auto-dispatch after packet transmits (first visit only)
+  useEffect(() => {
+    if (isDispatched) return;
+
+    setAutoDispatchCountdown(3);
+
+    const countdownInterval = setInterval(() => {
+      setAutoDispatchCountdown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    const dispatchTimer = setTimeout(() => {
+      if (!useEmergencyStore.getState().isDispatched) {
+        dispatchEmergency();
+      }
+    }, 3000);
+
+    return () => {
+      clearInterval(countdownInterval);
+      clearTimeout(dispatchTimer);
+    };
+  }, [isDispatched, dispatchEmergency]);
+
+  const handleSendChat = () => {
+    if (!chatInput.trim()) return;
+    addCitizenChatMessage(chatInput.trim());
+    setChatInput("");
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full space-y-4 px-2"
+      className="w-full space-y-4 px-2 pb-4"
     >
-      <p className="text-center text-sm text-emerald-glow font-medium">
-        Transmitting emergency data packet…
-      </p>
+      {isDispatched ? (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass rounded-2xl p-3 flex items-center justify-between border border-emerald/30"
+        >
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-emerald-glow" />
+            <div>
+              <p className="text-xs font-semibold text-emerald-glow">Help is on the way</p>
+              <p className="text-[10px] text-white/40">
+                ETA ~{Math.ceil(eta)} min · Update packet anytime below
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={goToDispatchStatus}
+            className="text-[10px] text-emerald-glow font-medium flex items-center gap-1 hover:underline"
+          >
+            <ChevronLeft className="w-3 h-3" />
+            ETA view
+          </button>
+        </motion.div>
+      ) : (
+        <div className="text-center">
+          <p className="text-sm text-emerald-glow font-medium">
+            Transmitting emergency data packet…
+          </p>
+          <motion.p
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="text-[11px] text-white/40 mt-1"
+          >
+            Auto-dispatching in {autoDispatchCountdown}s
+          </motion.p>
+        </div>
+      )}
 
       {/* GPS Map */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1 }}
-        className="glass rounded-2xl overflow-hidden"
-      >
-        <div className="relative h-32 map-grid">
+      <motion.div className="glass rounded-2xl overflow-hidden">
+        <div className="relative h-28 map-grid">
           <motion.div
             className="absolute w-4 h-4 rounded-full bg-emerald shadow-lg shadow-emerald/50"
             animate={{
@@ -92,16 +165,11 @@ export function DataPacketPreview() {
         </div>
       </motion.div>
 
-      {/* Video Thumbnail */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-        className="glass rounded-2xl p-3"
-      >
+      {/* Video */}
+      <div className="glass rounded-2xl p-3">
         <div className="flex items-center gap-2 mb-2">
           <Video className="w-4 h-4 text-emerald-glow" />
-          <span className="text-xs font-medium">Live Video Feed</span>
+          <span className="text-xs font-medium">Video for Emergency Services</span>
         </div>
         <div
           className="relative h-24 rounded-xl bg-gradient-to-br from-navy-light to-navy overflow-hidden cursor-pointer"
@@ -119,27 +187,14 @@ export function DataPacketPreview() {
               )}
             </motion.div>
           </div>
-          {isPlayingVideo && (
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: "100%" }}
-              className="absolute bottom-0 left-0 h-0.5 bg-emerald"
-              transition={{ duration: 10 }}
-            />
-          )}
           <span className="absolute top-2 left-2 text-[9px] bg-alert/80 px-1.5 py-0.5 rounded font-bold">
-            REC
+            {isPlayingVideo ? "REC" : "TAP TO RECORD"}
           </span>
         </div>
-      </motion.div>
+      </div>
 
       {/* Voice Note */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.3 }}
-        className="glass rounded-2xl p-3"
-      >
+      <div className="glass rounded-2xl p-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Mic className="w-4 h-4 text-emerald-glow" />
@@ -188,15 +243,25 @@ export function DataPacketPreview() {
           </div>
           <span className="text-[10px] text-white/40 font-mono">0:04</span>
         </div>
-      </motion.div>
+      </div>
+
+      {/* Private message */}
+      <div className="glass rounded-2xl p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <MessageSquare className="w-4 h-4 text-emerald-glow" />
+          <span className="text-xs font-medium">Private Message to Emergency Services</span>
+        </div>
+        <textarea
+          value={privateMessage}
+          onChange={(e) => setPrivateMessage(e.target.value)}
+          placeholder="Describe your situation… (optional)"
+          rows={2}
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-emerald/40"
+        />
+      </div>
 
       {/* Health Profile */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.4 }}
-        className="glass rounded-2xl p-3"
-      >
+      <div className="glass rounded-2xl p-3">
         <div className="flex items-center gap-2 mb-3">
           <Heart className="w-4 h-4 text-alert-glow" />
           <span className="text-xs font-medium">Health Profile</span>
@@ -215,19 +280,14 @@ export function DataPacketPreview() {
             <p className="font-medium">{SAMPLE_CITIZEN.conditions.join(", ")}</p>
           </div>
         </div>
-      </motion.div>
+      </div>
 
-      {/* Severity Slider */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.5 }}
-        className="glass rounded-2xl p-3"
-      >
+      {/* Severity */}
+      <div className="glass rounded-2xl p-3">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-emerald-glow" />
-            <span className="text-xs font-medium">Severity</span>
+            <span className="text-xs font-medium">Severity Level</span>
           </div>
           <span
             className={cn(
@@ -239,15 +299,82 @@ export function DataPacketPreview() {
           </span>
         </div>
         <Slider value={severity} onChange={setSeverity} min={1} max={10} />
-      </motion.div>
+        <p className="text-[9px] text-white/30 mt-2">Adjust anytime — even while waiting for help</p>
+      </div>
 
-      <motion.div
-        animate={{ opacity: [0.5, 1, 0.5] }}
-        transition={{ repeat: Infinity, duration: 1.5 }}
-        className="text-center text-[11px] text-white/40"
-      >
-        Auto-dispatching when packet complete…
-      </motion.div>
+      {/* Citizen chat */}
+      <div className="glass rounded-2xl p-3">
+        <div className="flex items-center gap-2 mb-2">
+          <MessageSquare className="w-4 h-4 text-emerald-glow" />
+          <span className="text-xs font-medium">Chat with Emergency Services</span>
+        </div>
+        <div className="bg-white/5 rounded-xl p-2 max-h-32 overflow-y-auto scrollbar-thin space-y-2 mb-2">
+          {citizenChatMessages.length === 0 ? (
+            <p className="text-[10px] text-white/30 text-center py-3">
+              Send a message to connect with operators
+            </p>
+          ) : (
+            citizenChatMessages.map((msg) => (
+              <div
+                key={msg.id}
+                className={cn(
+                  "text-[11px] rounded-lg px-2 py-1.5 max-w-[90%]",
+                  msg.sender === "citizen"
+                    ? "bg-white/10 ml-auto text-right"
+                    : "bg-emerald/20 mr-auto"
+                )}
+              >
+                <p>{msg.text}</p>
+                <p className="text-[9px] text-white/30 mt-0.5">{msg.time}</p>
+              </div>
+            ))
+          )}
+          <div ref={chatEndRef} />
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={chatInput}
+            onChange={(e) => setChatInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
+            placeholder="Type a message…"
+            className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald/40"
+          />
+          <button
+            onClick={handleSendChat}
+            className="w-9 h-9 rounded-xl bg-emerald/20 flex items-center justify-center hover:bg-emerald/30"
+          >
+            <Send className="w-4 h-4 text-emerald-glow" />
+          </button>
+        </div>
+      </div>
+
+      {!isDispatched ? (
+        <motion.div
+          className="glass rounded-2xl p-4 text-center"
+          animate={{ opacity: [0.7, 1, 0.7] }}
+          transition={{ repeat: Infinity, duration: 2 }}
+        >
+          <div className="h-1 bg-white/10 rounded-full overflow-hidden mb-2">
+            <motion.div
+              className="h-full bg-emerald"
+              initial={{ width: "0%" }}
+              animate={{ width: "100%" }}
+              transition={{ duration: 3, ease: "linear" }}
+            />
+          </div>
+          <p className="text-[11px] text-white/50">
+            Packet sending automatically — help will be dispatched shortly
+          </p>
+        </motion.div>
+      ) : (
+        <Button
+          onClick={goToDispatchStatus}
+          variant="outline"
+          className="w-full"
+        >
+          Back to ETA Countdown
+        </Button>
+      )}
     </motion.div>
   );
 }

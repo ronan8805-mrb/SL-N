@@ -2,14 +2,20 @@
 
 import { useEffect } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Clock, Shield } from "lucide-react";
+import { CheckCircle2, Clock, Shield, MessageSquare } from "lucide-react";
 import { SERVICES } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
 import { Button } from "@/components/ui/button";
 
 export function DispatchSuccess() {
-  const { selectedServices, responseTime, eta, setEta, resetDemo } =
-    useEmergencyStore();
+  const {
+    selectedServices,
+    responseTime,
+    eta,
+    setEta,
+    resetDemo,
+    goToCommunications,
+  } = useEmergencyStore();
 
   const services = SERVICES.filter(
     (s) =>
@@ -18,20 +24,12 @@ export function DispatchSuccess() {
   );
 
   useEffect(() => {
-    if (eta <= 0) return;
-    const timer = setInterval(() => {
-      const current = useEmergencyStore.getState().eta;
-      if (current > 0) setEta(current - 1);
-    }, 60000);
     const fastTimer = setInterval(() => {
       const current = useEmergencyStore.getState().eta;
       if (current > 0.5) setEta(Math.max(0, current - 0.1));
     }, 3000);
-    return () => {
-      clearInterval(timer);
-      clearInterval(fastTimer);
-    };
-  }, [eta, setEta]);
+    return () => clearInterval(fastTimer);
+  }, [setEta]);
 
   return (
     <motion.div
@@ -74,7 +72,7 @@ export function DispatchSuccess() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="glass rounded-2xl p-4 w-full max-w-xs mb-6"
+        className="glass rounded-2xl p-4 w-full max-w-xs mb-4"
       >
         <div className="flex items-center justify-center gap-2 mb-3">
           <Clock className="w-4 h-4 text-emerald-glow" />
@@ -91,7 +89,7 @@ export function DispatchSuccess() {
         </motion.p>
       </motion.div>
 
-      <div className="flex flex-wrap gap-2 justify-center mb-8">
+      <div className="flex flex-wrap gap-2 justify-center mb-6">
         {services.map((s, i) => (
           <motion.div
             key={s.id}
@@ -112,6 +110,24 @@ export function DispatchSuccess() {
           </motion.div>
         ))}
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8 }}
+        className="w-full max-w-xs mb-6"
+      >
+        <Button
+          onClick={goToCommunications}
+          className="w-full py-4 font-semibold bg-white/10 border border-emerald/30 hover:bg-emerald/20 text-emerald-glow"
+        >
+          <MessageSquare className="w-5 h-5" />
+          Communicate with Emergency Services
+        </Button>
+        <p className="text-[10px] text-white/35 mt-2">
+          Chat, send voice notes, record video, or adjust severity while you wait
+        </p>
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0 }}
