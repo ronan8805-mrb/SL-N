@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0f1a;
+  --foreground: #e8edf5;
+  --navy: #0a0f1a;
+  --navy-light: #111827;
+  --navy-card: #151d2e;
+  --emerald: #10b981;
+  --emerald-glow: #34d399;
+  --alert-red: #ef4444;
+  --alert-red-glow: #f87171;
+  --glass: rgba(21, 29, 46, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-navy: var(--navy);
+  --color-navy-light: var(--navy-light);
+  --color-navy-card: var(--navy-card);
+  --color-emerald: var(--emerald);
+  --color-emerald-glow: var(--emerald-glow);
+  --color-alert: var(--alert-red);
+  --color-alert-glow: var(--alert-red-glow);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+.glass {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-strong {
+  background: rgba(21, 29, 46, 0.9);
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.rescue-pulse {
+  animation: rescue-pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes rescue-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5),
+      0 0 60px rgba(239, 68, 68, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 0 20px rgba(239, 68, 68, 0),
+      0 0 80px rgba(239, 68, 68, 0.35);
+  }
+}
+
+.emerald-glow {
+  box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+}
+
+.gradient-mesh {
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(239, 68, 68, 0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+    var(--navy);
+}
+
+.phone-frame {
+  box-shadow:
+    0 0 0 2px rgba(255, 255, 255, 0.06),
+    0 25px 80px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.map-grid {
+  background-image:
+    linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

@@ -1,0 +1,18 @@
+{
+  "name": "SLÁN Rescue – Live Demo",
+  "short_name": "SLÁN Rescue",
+  "description": "Public Safety Emergency App by Chosanta LTD",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0f1a",
+  "theme_color": "#0a0f1a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
