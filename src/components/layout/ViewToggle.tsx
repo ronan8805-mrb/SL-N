@@ -10,35 +10,35 @@ export function ViewToggle() {
   const isCitizen = viewMode === "citizen";
 
   return (
-    <div className="glass rounded-2xl p-1 flex items-center gap-1 relative">
+    <div className="glass rounded-xl sm:rounded-2xl p-0.5 sm:p-1 flex items-center gap-0.5 sm:gap-1 relative">
       <motion.div
-        className="absolute top-1 bottom-1 rounded-xl bg-emerald/20 border border-emerald/30"
+        className="absolute top-0.5 bottom-0.5 sm:top-1 sm:bottom-1 rounded-lg sm:rounded-xl bg-emerald/20 border border-emerald/30"
         layout
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
         style={{
-          left: isCitizen ? 4 : "50%",
-          right: isCitizen ? "50%" : 4,
+          left: isCitizen ? 2 : "50%",
+          right: isCitizen ? "50%" : 2,
         }}
       />
       <button
         onClick={() => setViewMode("citizen")}
         className={cn(
-          "relative z-10 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors",
+          "relative z-10 flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-sm font-medium transition-colors",
           isCitizen ? "text-emerald-glow" : "text-white/50 hover:text-white/70"
         )}
       >
-        <Smartphone className="w-4 h-4" />
+        <Smartphone className="w-3 h-3 sm:w-4 sm:h-4" />
         <span className="hidden sm:inline">Citizen View</span>
         <span className="sm:hidden">Citizen</span>
       </button>
       <button
         onClick={() => setViewMode("command")}
         className={cn(
-          "relative z-10 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors",
+          "relative z-10 flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-sm font-medium transition-colors",
           !isCitizen ? "text-emerald-glow" : "text-white/50 hover:text-white/70"
         )}
       >
-        <Shield className="w-4 h-4" />
+        <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
         <span className="hidden sm:inline">Command Dashboard</span>
         <span className="sm:hidden">Command</span>
       </button>

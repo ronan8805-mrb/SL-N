@@ -95,6 +95,23 @@ export const CHAT_MESSAGES = [
   { id: "5", sender: "operator", text: "We can see your exact location. Gardaí are also en route.", time: "14:32:12" },
 ];
 
+export function getChatAvailableServices(selected: ServiceType[]): Service[] {
+  const ids = new Set<ServiceType>(selected);
+  ids.add("guardian");
+  return SERVICES.filter((s) => ids.has(s.id));
+}
+
+export const SERVICE_CHAT_REPLIES: Record<ServiceType, string> = {
+  ambulance:
+    "Ambulance dispatch received your packet. Medical team is reviewing your location and health profile.",
+  garda:
+    "Gardaí unit acknowledged. We're coordinating with other services on your incident.",
+  fire:
+    "Fire brigade notified. Your live data packet has been shared with the nearest station.",
+  guardian:
+    "Guardians alerted with your full emergency packet — location, health profile, and severity.",
+};
+
 export const PIPELINE_STAGES = [
   { id: "received", label: "Received", icon: "📡" },
   { id: "verified", label: "Verified", icon: "✓" },

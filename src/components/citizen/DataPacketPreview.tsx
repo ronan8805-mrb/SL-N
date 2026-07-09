@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   MapPin,
@@ -15,8 +15,11 @@ import {
   Send,
   Clock,
   ChevronLeft,
+  ChevronDown,
+  Shield,
 } from "lucide-react";
-import { SAMPLE_CITIZEN } from "@/lib/sample-data";
+import { toast } from "sonner";
+import { SAMPLE_CITIZEN, getChatAvailableServices } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
@@ -38,12 +41,29 @@ export function DataPacketPreview() {
     isDispatched,
     privateMessage,
     setPrivateMessage,
+    selectedServices,
     citizenChatMessages,
     addCitizenChatMessage,
+    chatTargetService,
+    setChatTargetService,
+    notifyGuardians,
+    guardiansNotified,
     goToDispatchStatus,
     eta,
     responseTime,
   } = useEmergencyStore();
+
+  const availableChatServices = useMemo(
+    () => getChatAvailableServices(selectedServices),
+    [selectedServices]
+  );
+
+  const filteredChatMessages = useMemo(
+    () => citizenChatMessages.filter((m) => m.serviceId === chatTargetService),
+    [citizenChatMessages, chatTargetService]
+  );
+
+  const activeChatService = availableChatServices.find((s) => s.id === chatTargetService);
 
   const [chatInput, setChatInput] = useState("");
   const [autoDispatchCountdown, setAutoDispatchCountdown] = useState(3);
@@ -60,7 +80,14 @@ export function DataPacketPreview() {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [citizenChatMessages]);
+  }, [filteredChatMessages]);
+
+  useEffect(() => {
+    const valid = availableChatServices.some((s) => s.id === chatTargetService);
+    if (!valid && availableChatServices.length > 0) {
+      setChatTargetService(availableChatServices[0].id);
+    }
+  }, [availableChatServices, chatTargetService, setChatTargetService]);
 
   // Auto-dispatch after packet transmits (first visit only)
   useEffect(() => {
@@ -86,8 +113,14 @@ export function DataPacketPreview() {
 
   const handleSendChat = () => {
     if (!chatInput.trim()) return;
-    addCitizenChatMessage(chatInput.trim());
+    addCitizenChatMessage(chatInput.trim(), chatTargetService);
     setChatInput("");
+  };
+
+  const handleNotifyGuardians = () => {
+    if (guardiansNotified) return;
+    notifyGuardians();
+    toast.success("Guardians notified with full emergency packet");
   };
 
   return (
@@ -302,25 +335,80 @@ export function DataPacketPreview() {
         <p className="text-[9px] text-white/30 mt-2">Adjust anytime — even while waiting for help</p>
       </div>
 
+      {/* Notify Guardians */}
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={handleNotifyGuardians}
+        disabled={guardiansNotified}
+        className={cn(
+          "w-full glass rounded-2xl p-3 flex items-center gap-3 transition-colors",
+          guardiansNotified
+            ? "border border-emerald/30 opacity-80"
+            : "border border-emerald/20 hover:border-emerald/40 hover:bg-emerald/5"
+        )}
+      >
+        <div className="w-9 h-9 rounded-xl bg-emerald/20 flex items-center justify-center shrink-0">
+          <Shield className="w-4 h-4 text-emerald-glow" />
+        </div>
+        <div className="text-left flex-1">
+          <p className="text-xs font-semibold">
+            {guardiansNotified ? "Guardians Notified ✓" : "Notify Guardians"}
+          </p>
+          <p className="text-[10px] text-white/40">
+            {guardiansNotified
+              ? "Full packet sent — location, health & severity"
+              : "Forgot to swipe? Send rich packet data instantly"}
+          </p>
+        </div>
+      </motion.button>
+
       {/* Citizen chat */}
       <div className="glass rounded-2xl p-3">
-        <div className="flex items-center gap-2 mb-2">
-          <MessageSquare className="w-4 h-4 text-emerald-glow" />
-          <span className="text-xs font-medium">Chat with Emergency Services</span>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-4 h-4 text-emerald-glow" />
+            <span className="text-xs font-medium">Chat</span>
+          </div>
+          <div className="relative">
+            <select
+              value={chatTargetService}
+              onChange={(e) => setChatTargetService(e.target.value as typeof chatTargetService)}
+              className="appearance-none bg-white/10 border border-white/10 rounded-lg pl-2 pr-7 py-1.5 text-[11px] font-medium focus:outline-none focus:border-emerald/40 cursor-pointer"
+            >
+              {availableChatServices.map((svc) => (
+                <option key={svc.id} value={svc.id} className="bg-navy-card">
+                  {svc.icon} {svc.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-white/40" />
+          </div>
         </div>
+
+        {activeChatService && (
+          <p className="text-[10px] text-white/35 mb-2">
+            Speaking with {activeChatService.name}
+            {!selectedServices.includes(activeChatService.id) && activeChatService.id === "guardian"
+              ? " · always available"
+              : ""}
+          </p>
+        )}
+
         <div className="bg-white/5 rounded-xl p-2 max-h-32 overflow-y-auto scrollbar-thin space-y-2 mb-2">
-          {citizenChatMessages.length === 0 ? (
+          {filteredChatMessages.length === 0 ? (
             <p className="text-[10px] text-white/30 text-center py-3">
-              Send a message to connect with operators
+              Send a message to {activeChatService?.name ?? "this service"}
             </p>
           ) : (
-            citizenChatMessages.map((msg) => (
+            filteredChatMessages.map((msg) => (
               <div
                 key={msg.id}
                 className={cn(
                   "text-[11px] rounded-lg px-2 py-1.5 max-w-[90%]",
                   msg.sender === "citizen"
                     ? "bg-white/10 ml-auto text-right"
+                    : msg.sender === "system"
+                    ? "bg-emerald/10 mx-auto text-center text-[10px] text-emerald-glow/80"
                     : "bg-emerald/20 mr-auto"
                 )}
               >
@@ -336,7 +424,7 @@ export function DataPacketPreview() {
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-            placeholder="Type a message…"
+            placeholder={`Message ${activeChatService?.shortName ?? "service"}…`}
             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald/40"
           />
           <button

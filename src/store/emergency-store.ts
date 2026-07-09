@@ -2,6 +2,7 @@ import { create } from "zustand";
 import {
   INITIAL_LOCATION,
   SAMPLE_CITIZEN,
+  SERVICE_CHAT_REPLIES,
   type ServiceType,
   type Incident,
 } from "@/lib/sample-data";
@@ -43,7 +44,15 @@ interface EmergencyState {
   guardians: string[];
   isDispatched: boolean;
   privateMessage: string;
-  citizenChatMessages: { id: string; sender: "citizen" | "operator"; text: string; time: string }[];
+  citizenChatMessages: {
+    id: string;
+    sender: "citizen" | "operator" | "system";
+    text: string;
+    time: string;
+    serviceId: ServiceType;
+  }[];
+  chatTargetService: ServiceType;
+  guardiansNotified: boolean;
 
   setViewMode: (mode: ViewMode) => void;
   setCitizenStep: (step: CitizenStep) => void;
@@ -65,7 +74,9 @@ interface EmergencyState {
   addGuardian: (name: string) => void;
   addChatMessage: (sender: string, text: string) => void;
   setPrivateMessage: (msg: string) => void;
-  addCitizenChatMessage: (text: string) => void;
+  addCitizenChatMessage: (text: string, serviceId?: ServiceType) => void;
+  setChatTargetService: (service: ServiceType) => void;
+  notifyGuardians: () => void;
   goToCommunications: () => void;
   goToDispatchStatus: () => void;
 }
@@ -99,6 +110,8 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
   isDispatched: false,
   privateMessage: "",
   citizenChatMessages: [],
+  chatTargetService: "ambulance",
+  guardiansNotified: false,
 
   setViewMode: (mode) => set({ viewMode: mode }),
   setCitizenStep: (step) => set({ citizenStep: step }),
@@ -163,6 +176,8 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       incident: null,
       privateMessage: "",
       citizenChatMessages: [],
+      chatTargetService: "ambulance",
+      guardiansNotified: false,
       responseTime: 0,
       pipelineStage: "received",
     }),
@@ -187,6 +202,8 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       privateMessage: "",
       chatMessages: [],
       citizenChatMessages: [],
+      chatTargetService: "ambulance",
+      guardiansNotified: false,
       guardians: [],
     }),
 
@@ -212,8 +229,9 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
 
   setPrivateMessage: (msg) => set({ privateMessage: msg }),
 
-  addCitizenChatMessage: (text) =>
+  addCitizenChatMessage: (text, serviceId) =>
     set((s) => {
+      const target = serviceId ?? s.chatTargetService;
       const time = new Date().toLocaleTimeString("en-IE", {
         hour: "2-digit",
         minute: "2-digit",
@@ -224,15 +242,54 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
         sender: "citizen" as const,
         text,
         time,
+        serviceId: target,
       };
       const operatorReply = {
         id: (Date.now() + 1).toString(),
         sender: "operator" as const,
-        text: "Received. We're monitoring your location and data packet. Help is en route.",
+        text: SERVICE_CHAT_REPLIES[target],
         time,
+        serviceId: target,
       };
       return {
         citizenChatMessages: [...s.citizenChatMessages, citizenMsg, operatorReply],
+      };
+    }),
+
+  setChatTargetService: (service) => set({ chatTargetService: service }),
+
+  notifyGuardians: () =>
+    set((s) => {
+      const time = new Date().toLocaleTimeString("en-IE", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+      const alreadySelected = s.selectedServices.includes("guardian");
+      const systemMsg = {
+        id: Date.now().toString(),
+        sender: "system" as const,
+        text: "Full emergency packet sent to Guardians — GPS, video, voice note, health profile & severity.",
+        time,
+        serviceId: "guardian" as ServiceType,
+      };
+      const guardianReply = {
+        id: (Date.now() + 1).toString(),
+        sender: "operator" as const,
+        text: SERVICE_CHAT_REPLIES.guardian,
+        time,
+        serviceId: "guardian" as ServiceType,
+      };
+      return {
+        selectedServices: alreadySelected
+          ? s.selectedServices
+          : [...s.selectedServices, "guardian"],
+        guardiansNotified: true,
+        guardians: s.guardians.includes("Seán Murphy (Brother)")
+          ? s.guardians
+          : [...s.guardians, "Seán Murphy (Brother)"],
+        chatTargetService: "guardian",
+        citizenChatMessages: [...s.citizenChatMessages, systemMsg, guardianReply],
       };
     }),
 
