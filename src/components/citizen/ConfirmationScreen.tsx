@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { SERVICES } from "@/lib/sample-data";
@@ -16,7 +16,10 @@ export function ConfirmationScreen() {
     setCountdown,
     setCitizenStep,
     cancelAll,
+    finalizeConfirmationOnTimeout,
   } = useEmergencyStore();
+
+  const advancedRef = useRef(false);
 
   const services = SERVICES.filter((s) => selectedServices.includes(s.id));
   const acceptedServices = services.filter(
@@ -25,39 +28,38 @@ export function ConfirmationScreen() {
   const allConfirmed = services.every(
     (s) => serviceConfirmations[s.id] !== null
   );
-  const allAccepted = services.length > 0 && services.every(
-    (s) => serviceConfirmations[s.id] === true
-  );
+  const allAccepted =
+    services.length > 0 &&
+    services.every((s) => serviceConfirmations[s.id] === true);
   const anyRejected = services.some(
     (s) => serviceConfirmations[s.id] === false
   );
 
+  const advanceToData = () => {
+    if (advancedRef.current) return;
+    advancedRef.current = true;
+    finalizeConfirmationOnTimeout();
+  };
+
+  useEffect(() => {
+    advancedRef.current = false;
+  }, []);
+
   useEffect(() => {
     const timer = setInterval(() => {
       const state = useEmergencyStore.getState();
-      if (state.countdown <= 1) {
+      if (state.countdown <= 0) {
         clearInterval(timer);
-        const accepted = SERVICES.filter(
-          (s) =>
-            state.selectedServices.includes(s.id) &&
-            state.serviceConfirmations[s.id] === true
-        );
-        if (accepted.length > 0) {
-          setCitizenStep("data");
-        }
+        advanceToData();
         return;
       }
       setCountdown(state.countdown - 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [setCountdown, setCitizenStep]);
+  }, [setCountdown]);
 
   useEffect(() => {
-    if (allConfirmed && acceptedServices.length > 0 && !anyRejected) {
-      const t = setTimeout(() => setCitizenStep("data"), 600);
-      return () => clearTimeout(t);
-    }
-    if (allConfirmed && anyRejected && acceptedServices.length > 0) {
+    if (allConfirmed && acceptedServices.length > 0) {
       const t = setTimeout(() => setCitizenStep("data"), 600);
       return () => clearTimeout(t);
     }
@@ -76,7 +78,7 @@ export function ConfirmationScreen() {
         Confirm each service — false alarm prevention
       </p>
       <p className="text-[10px] text-white/30 mb-4 text-center">
-        Tap ✓ to confirm or ✗ to cancel each service
+        Tap ✓ or ✗ · Unconfirmed services auto-confirm when timer ends
       </p>
 
       <div className="relative w-32 h-32 mb-6">
@@ -184,6 +186,16 @@ export function ConfirmationScreen() {
           className="text-[11px] text-emerald-glow mt-4"
         >
           All confirmed — preparing data packet…
+        </motion.p>
+      )}
+
+      {countdown <= 3 && !allAccepted && selectedServices.length > 0 && (
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-[11px] text-white/40 mt-4"
+        >
+          Auto-confirming swiped services…
         </motion.p>
       )}
 

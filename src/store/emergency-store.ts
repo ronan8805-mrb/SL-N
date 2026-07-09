@@ -23,6 +23,8 @@ export type PipelineStage =
   | "arrived"
   | "resolved";
 
+export type ArrivalPhase = "countdown" | "arriving" | "arrived";
+
 interface EmergencyState {
   viewMode: ViewMode;
   citizenStep: CitizenStep;
@@ -53,6 +55,9 @@ interface EmergencyState {
   }[];
   chatTargetService: ServiceType;
   guardiansNotified: boolean;
+  arrivalPhase: ArrivalPhase;
+  displayEtaMinutes: number;
+  dispatchTimestamp: number | null;
 
   setViewMode: (mode: ViewMode) => void;
   setCitizenStep: (step: CitizenStep) => void;
@@ -79,6 +84,9 @@ interface EmergencyState {
   notifyGuardians: () => void;
   goToCommunications: () => void;
   goToDispatchStatus: () => void;
+  finalizeConfirmationOnTimeout: () => void;
+  setArrivalPhase: (phase: ArrivalPhase) => void;
+  setDisplayEtaMinutes: (n: number) => void;
 }
 
 const initialConfirmations: Record<ServiceType, boolean | null> = {
@@ -112,6 +120,9 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
   citizenChatMessages: [],
   chatTargetService: "ambulance",
   guardiansNotified: false,
+  arrivalPhase: "countdown",
+  displayEtaMinutes: 4,
+  dispatchTimestamp: null,
 
   setViewMode: (mode) => set({ viewMode: mode }),
   setCitizenStep: (step) => set({ citizenStep: step }),
@@ -162,6 +173,9 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       pipelineStage: "dispatched",
       responseTime: get().demoSpeed === "slan" ? 2.1 : 18.4,
       eta: 4,
+      arrivalPhase: "countdown",
+      displayEtaMinutes: 4,
+      dispatchTimestamp: Date.now(),
     });
   },
 
@@ -180,6 +194,9 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       guardiansNotified: false,
       responseTime: 0,
       pipelineStage: "received",
+      arrivalPhase: "countdown",
+      displayEtaMinutes: 4,
+      dispatchTimestamp: null,
     }),
 
   resetDemo: () =>
@@ -205,7 +222,36 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       chatTargetService: "ambulance",
       guardiansNotified: false,
       guardians: [],
+      arrivalPhase: "countdown",
+      displayEtaMinutes: 4,
+      dispatchTimestamp: null,
     }),
+
+  finalizeConfirmationOnTimeout: () => {
+    const { selectedServices, serviceConfirmations } = get();
+    if (selectedServices.length === 0) return;
+
+    const newConfirmations = { ...serviceConfirmations };
+    selectedServices.forEach((id) => {
+      if (newConfirmations[id] === null) {
+        newConfirmations[id] = true;
+      }
+    });
+
+    const finalSelected = selectedServices.filter(
+      (id) => newConfirmations[id] === true
+    );
+    if (finalSelected.length === 0) return;
+
+    set({
+      serviceConfirmations: newConfirmations,
+      selectedServices: finalSelected,
+      citizenStep: "data",
+    });
+  },
+
+  setArrivalPhase: (phase) => set({ arrivalPhase: phase }),
+  setDisplayEtaMinutes: (n) => set({ displayEtaMinutes: n }),
 
   addGuardian: (name) =>
     set((s) => ({ guardians: [...s.guardians, name] })),
