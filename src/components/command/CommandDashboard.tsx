@@ -1,16 +1,20 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Ambulance, Flame } from "lucide-react";
 import { IncidentFeed } from "./IncidentFeed";
 import { LiveMap } from "./LiveMap";
 import { DataPacketCard } from "./DataPacketCard";
 import { ActionButtons } from "./ActionButtons";
 import { ChatSimulation } from "./ChatSimulation";
 import { StatusPipeline } from "./StatusPipeline";
+import { CommandCentreToggle } from "./CommandCentreToggle";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { cn } from "@/lib/utils";
 
 export function CommandDashboard() {
-  const { incident } = useEmergencyStore();
+  const { incident, commandCentre } = useEmergencyStore();
+  const isAmbulance = commandCentre === "ambulance";
 
   return (
     <motion.div
@@ -19,6 +23,41 @@ export function CommandDashboard() {
       exit={{ opacity: 0 }}
       className="max-w-7xl mx-auto px-4 py-6 space-y-6"
     >
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div
+            className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center",
+              isAmbulance
+                ? "bg-red-500/20 border border-red-500/30"
+                : "bg-orange-500/20 border border-orange-500/30"
+            )}
+          >
+            {isAmbulance ? (
+              <Ambulance className="w-5 h-5 text-red-400" />
+            ) : (
+              <Flame className="w-5 h-5 text-orange-400" />
+            )}
+          </div>
+          <div>
+            <h2 className="text-lg font-bold tracking-tight">
+              {isAmbulance ? "Ambulance" : "Fire Brigade"}{" "}
+              <span
+                className={cn(
+                  isAmbulance ? "text-red-400" : "text-orange-400"
+                )}
+              >
+                Command Centre
+              </span>
+            </h2>
+            <p className="text-[11px] text-white/40">
+              SLÁN National Emergency Operations
+            </p>
+          </div>
+        </div>
+        <CommandCentreToggle />
+      </div>
+
       <StatusPipeline />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

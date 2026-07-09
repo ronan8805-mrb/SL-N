@@ -5,12 +5,10 @@ import { motion } from "framer-motion";
 import {
   MapPin,
   Video,
-  Mic,
   Heart,
   Activity,
   Play,
   Pause,
-  Square,
   MessageSquare,
   Send,
   Clock,
@@ -23,6 +21,7 @@ import { SAMPLE_CITIZEN, getChatAvailableServices } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { VoiceNotePlayer } from "@/components/shared/VoiceNotePlayer";
 import { cn } from "@/lib/utils";
 
 export function DataPacketPreview() {
@@ -228,54 +227,13 @@ export function DataPacketPreview() {
 
       {/* Voice Note */}
       <div className="glass rounded-2xl p-3">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <Mic className="w-4 h-4 text-emerald-glow" />
-            <span className="text-xs font-medium">Voice Note</span>
-          </div>
-          <button
-            onClick={() => setIsRecording(!isRecording)}
-            className={cn(
-              "px-3 py-1 rounded-lg text-[10px] font-bold transition-colors",
-              isRecording
-                ? "bg-alert/30 text-alert-glow animate-pulse"
-                : "bg-white/10 text-white/60"
-            )}
-          >
-            {isRecording ? "Recording…" : "Record"}
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setIsPlayingVoice(!isPlayingVoice)}
-            className="w-8 h-8 rounded-lg bg-emerald/20 flex items-center justify-center"
-          >
-            {isPlayingVoice ? (
-              <Square className="w-3 h-3 text-emerald-glow" />
-            ) : (
-              <Play className="w-3 h-3 text-emerald-glow ml-0.5" />
-            )}
-          </button>
-          <div className="flex-1 flex items-end gap-0.5 h-8">
-            {Array.from({ length: 30 }).map((_, i) => (
-              <motion.div
-                key={i}
-                className="flex-1 bg-emerald/40 rounded-full"
-                animate={
-                  isPlayingVoice || isRecording
-                    ? { height: [4, Math.random() * 24 + 4, 4] }
-                    : { height: 4 }
-                }
-                transition={{
-                  repeat: Infinity,
-                  duration: 0.5 + Math.random() * 0.5,
-                  delay: i * 0.03,
-                }}
-              />
-            ))}
-          </div>
-          <span className="text-[10px] text-white/40 font-mono">0:04</span>
-        </div>
+        <VoiceNotePlayer
+          isPlaying={isPlayingVoice}
+          onPlayingChange={setIsPlayingVoice}
+          isRecording={isRecording}
+          onRecordingChange={setIsRecording}
+          showRecordButton
+        />
       </div>
 
       {/* Private message */}

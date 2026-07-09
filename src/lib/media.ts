@@ -1,0 +1,1 @@
+export const VOICE_NOTE_SRC = "/audio/voice-note.mpeg";

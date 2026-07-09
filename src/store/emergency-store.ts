@@ -24,6 +24,7 @@ export type PipelineStage =
   | "resolved";
 
 export type ArrivalPhase = "countdown" | "arriving" | "arrived";
+export type CommandCentre = "ambulance" | "fire";
 
 interface EmergencyState {
   viewMode: ViewMode;
@@ -58,6 +59,7 @@ interface EmergencyState {
   arrivalPhase: ArrivalPhase;
   displayEtaMinutes: number;
   dispatchTimestamp: number | null;
+  commandCentre: CommandCentre;
 
   setViewMode: (mode: ViewMode) => void;
   setCitizenStep: (step: CitizenStep) => void;
@@ -87,6 +89,7 @@ interface EmergencyState {
   finalizeConfirmationOnTimeout: () => void;
   setArrivalPhase: (phase: ArrivalPhase) => void;
   setDisplayEtaMinutes: (n: number) => void;
+  setCommandCentre: (centre: CommandCentre) => void;
 }
 
 const initialConfirmations: Record<ServiceType, boolean | null> = {
@@ -123,6 +126,7 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
   arrivalPhase: "countdown",
   displayEtaMinutes: 4,
   dispatchTimestamp: null,
+  commandCentre: "ambulance",
 
   setViewMode: (mode) => set({ viewMode: mode }),
   setCitizenStep: (step) => set({ citizenStep: step }),
@@ -197,6 +201,7 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       arrivalPhase: "countdown",
       displayEtaMinutes: 4,
       dispatchTimestamp: null,
+      commandCentre: "ambulance",
     }),
 
   resetDemo: () =>
@@ -225,6 +230,7 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       arrivalPhase: "countdown",
       displayEtaMinutes: 4,
       dispatchTimestamp: null,
+      commandCentre: "ambulance",
     }),
 
   finalizeConfirmationOnTimeout: () => {
@@ -252,6 +258,7 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
 
   setArrivalPhase: (phase) => set({ arrivalPhase: phase }),
   setDisplayEtaMinutes: (n) => set({ displayEtaMinutes: n }),
+  setCommandCentre: (centre) => set({ commandCentre: centre }),
 
   addGuardian: (name) =>
     set((s) => ({ guardians: [...s.guardians, name] })),

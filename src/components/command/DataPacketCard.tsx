@@ -3,7 +3,6 @@
 import { motion } from "framer-motion";
 import {
   Video,
-  Mic,
   Heart,
   MapPin,
   Play,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 import { SAMPLE_CITIZEN } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { VoiceNotePlayer } from "@/components/shared/VoiceNotePlayer";
 
 export function DataPacketCard() {
   const {
@@ -98,32 +98,11 @@ export function DataPacketCard() {
 
       {/* Voice */}
       <div className="bg-white/5 rounded-xl p-3">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2 text-xs">
-            <Mic className="w-3 h-3 text-emerald-glow" />
-            Voice Note
-          </div>
-          <button
-            onClick={() => setIsPlayingVoice(!isPlayingVoice)}
-            className="text-[10px] text-emerald-glow font-medium"
-          >
-            {isPlayingVoice ? "Stop" : "Play"}
-          </button>
-        </div>
-        <div className="flex items-end gap-0.5 h-6">
-          {Array.from({ length: 40 }).map((_, i) => (
-            <motion.div
-              key={i}
-              className="flex-1 bg-emerald/30 rounded-full"
-              animate={
-                isPlayingVoice
-                  ? { height: [2, Math.random() * 20 + 2, 2] }
-                  : { height: 2 + Math.sin(i * 0.3) * 4 }
-              }
-              transition={{ repeat: Infinity, duration: 0.4, delay: i * 0.02 }}
-            />
-          ))}
-        </div>
+        <VoiceNotePlayer
+          isPlaying={isPlayingVoice}
+          onPlayingChange={setIsPlayingVoice}
+          compact
+        />
       </div>
 
       {/* Health */}
