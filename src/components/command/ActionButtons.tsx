@@ -5,6 +5,7 @@ import { Rocket, MapPinned, CheckCircle, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEmergencyStore } from "@/store/emergency-store";
 import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
+import { useTranslation } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -12,6 +13,7 @@ export function ActionButtons() {
   const { incident, setPipelineStage, addGuardian, pipelineStage } =
     useEmergencyStore();
   const theme = useCommandCentreTheme();
+  const { t } = useTranslation();
 
   if (!incident) return null;
 
@@ -51,7 +53,7 @@ export function ActionButtons() {
       icon: UserPlus,
       variant: "outline" as const,
       onClick: () => {
-        addGuardian("Seán Murphy (Brother)");
+        addGuardian(t.sample.guardianName);
         toast.info(theme.actions.secondaryToast);
       },
       disabled: false,

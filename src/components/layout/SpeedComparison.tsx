@@ -3,9 +3,11 @@
 import { motion } from "framer-motion";
 import { Zap, Clock } from "lucide-react";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useTranslation } from "@/hooks/use-translation";
 
 export function SpeedComparison() {
   const { responseTime, demoSpeed } = useEmergencyStore();
+  const { t } = useTranslation();
   const slanTime = responseTime > 0 ? responseTime : 2.1;
   const traditionalTime = 18.4;
 
@@ -20,7 +22,7 @@ export function SpeedComparison() {
           <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-glow" />
         </div>
         <div>
-          <p className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">SLÁN</p>
+          <p className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40">{t.header.slan}</p>
           <p className="text-sm sm:text-lg font-bold text-emerald-glow tabular-nums leading-none">
             {slanTime.toFixed(1)}s
           </p>
@@ -35,7 +37,7 @@ export function SpeedComparison() {
         </div>
         <div>
           <p className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40 hidden min-[400px]:block">
-            999
+            {t.header.traditional999}
           </p>
           <p className="text-sm sm:text-lg font-bold text-white/50 tabular-nums line-through decoration-alert/60 leading-none">
             {traditionalTime}s+
@@ -49,7 +51,7 @@ export function SpeedComparison() {
           transition={{ repeat: Infinity, duration: 2 }}
           className="text-[9px] sm:text-[10px] text-emerald/70 font-medium hidden md:block"
         >
-          8.7× faster
+          {t.header.faster}
         </motion.span>
       )}
     </motion.div>

@@ -2,9 +2,11 @@
 
 import { motion } from "framer-motion";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useTranslation } from "@/hooks/use-translation";
 
 export function RescueButton() {
   const { setCitizenStep } = useEmergencyStore();
+  const { t } = useTranslation();
 
   return (
     <motion.button
@@ -20,8 +22,8 @@ export function RescueButton() {
         transition={{ repeat: Infinity, duration: 2.5 }}
       />
       <div className="text-center z-10">
-        <span className="text-2xl font-black text-white tracking-widest">RESCUE</span>
-        <p className="text-[10px] text-white/70 mt-1 font-medium">Tap to activate</p>
+        <span className="text-2xl font-black text-white tracking-widest">{t.citizen.lock.rescue}</span>
+        <p className="text-[10px] text-white/70 mt-1 font-medium">{t.citizen.lock.tapActivate}</p>
       </div>
     </motion.button>
   );

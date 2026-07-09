@@ -2,10 +2,15 @@ import { create } from "zustand";
 import {
   INITIAL_LOCATION,
   SAMPLE_CITIZEN,
-  SERVICE_CHAT_REPLIES,
   type ServiceType,
   type Incident,
 } from "@/lib/sample-data";
+import {
+  getServiceChatReplies,
+  getLocaleCode,
+  type Locale,
+} from "@/lib/i18n";
+import { translations, interpolate } from "@/lib/i18n/translations";
 
 export type ViewMode = "citizen" | "command";
 export type CitizenStep =
@@ -60,6 +65,7 @@ interface EmergencyState {
   displayEtaMinutes: number;
   dispatchTimestamp: number | null;
   commandCentre: CommandCentre;
+  locale: Locale;
 
   setViewMode: (mode: ViewMode) => void;
   setCitizenStep: (step: CitizenStep) => void;
@@ -90,6 +96,7 @@ interface EmergencyState {
   setArrivalPhase: (phase: ArrivalPhase) => void;
   setDisplayEtaMinutes: (n: number) => void;
   setCommandCentre: (centre: CommandCentre) => void;
+  setLocale: (locale: Locale) => void;
 }
 
 const initialConfirmations: Record<ServiceType, boolean | null> = {
@@ -127,6 +134,7 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
   displayEtaMinutes: 4,
   dispatchTimestamp: null,
   commandCentre: "ambulance",
+  locale: "en",
 
   setViewMode: (mode) => set({ viewMode: mode }),
   setCitizenStep: (step) => set({ citizenStep: step }),
@@ -259,6 +267,7 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
   setArrivalPhase: (phase) => set({ arrivalPhase: phase }),
   setDisplayEtaMinutes: (n) => set({ displayEtaMinutes: n }),
   setCommandCentre: (centre) => set({ commandCentre: centre }),
+  setLocale: (locale) => set({ locale }),
 
   addGuardian: (name) =>
     set((s) => ({ guardians: [...s.guardians, name] })),
@@ -285,11 +294,13 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
   addCitizenChatMessage: (text, serviceId) =>
     set((s) => {
       const target = serviceId ?? s.chatTargetService;
-      const time = new Date().toLocaleTimeString("en-IE", {
+      const localeCode = getLocaleCode(s.locale);
+      const time = new Date().toLocaleTimeString(localeCode, {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
       });
+      const replies = getServiceChatReplies(s.locale);
       const citizenMsg = {
         id: Date.now().toString(),
         sender: "citizen" as const,
@@ -300,7 +311,7 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
       const operatorReply = {
         id: (Date.now() + 1).toString(),
         sender: "operator" as const,
-        text: SERVICE_CHAT_REPLIES[target],
+        text: replies[target],
         time,
         serviceId: target,
       };
@@ -313,23 +324,27 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
 
   notifyGuardians: () =>
     set((s) => {
-      const time = new Date().toLocaleTimeString("en-IE", {
+      const localeCode = getLocaleCode(s.locale);
+      const time = new Date().toLocaleTimeString(localeCode, {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
       });
+      const t = translations[s.locale];
+      const replies = getServiceChatReplies(s.locale);
       const alreadySelected = s.selectedServices.includes("guardian");
+      const guardianName = t.sample.guardianName;
       const systemMsg = {
         id: Date.now().toString(),
         sender: "system" as const,
-        text: "Full emergency packet sent to Guardians — GPS, video, voice note, health profile & severity.",
+        text: t.chat.guardianNotify,
         time,
         serviceId: "guardian" as ServiceType,
       };
       const guardianReply = {
         id: (Date.now() + 1).toString(),
         sender: "operator" as const,
-        text: SERVICE_CHAT_REPLIES.guardian,
+        text: replies.guardian,
         time,
         serviceId: "guardian" as ServiceType,
       };
@@ -338,9 +353,9 @@ export const useEmergencyStore = create<EmergencyState>((set, get) => ({
           ? s.selectedServices
           : [...s.selectedServices, "guardian"],
         guardiansNotified: true,
-        guardians: s.guardians.includes("Seán Murphy (Brother)")
+        guardians: s.guardians.includes(guardianName)
           ? s.guardians
-          : [...s.guardians, "Seán Murphy (Brother)"],
+          : [...s.guardians, guardianName],
         chatTargetService: "guardian",
         citizenChatMessages: [...s.citizenChatMessages, systemMsg, guardianReply],
       };

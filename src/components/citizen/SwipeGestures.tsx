@@ -3,8 +3,9 @@
 import { useRef, useState } from "react";
 import { motion, useMotionValue, useTransform, PanInfo } from "framer-motion";
 import { ArrowUp, ArrowDown, ArrowLeft, ArrowRight } from "lucide-react";
-import { SERVICES, type ServiceType } from "@/lib/sample-data";
+import type { Service, ServiceType } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useTranslation } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 
 const SWIPE_THRESHOLD = 50;
@@ -31,6 +32,8 @@ interface SwipeGesturesProps {
 
 export function SwipeGestures({ mode = "triage", onContinue }: SwipeGesturesProps) {
   const { toggleService, selectedServices, setCitizenStep } = useEmergencyStore();
+  const { t, services: localizedServices, interpolate } = useTranslation();
+  const services = localizedServices as Service[];
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const [activeDirection, setActiveDirection] = useState<string | null>(null);
@@ -81,27 +84,28 @@ export function SwipeGestures({ mode = "triage", onContinue }: SwipeGesturesProp
   };
 
   const arrows = [
-    { dir: "up", Icon: ArrowUp, label: "Ambulance", pos: "top-2 left-1/2 -translate-x-1/2" },
-    { dir: "left", Icon: ArrowLeft, label: "Gardaí", pos: "left-2 top-1/2 -translate-y-1/2" },
-    { dir: "right", Icon: ArrowRight, label: "Fire", pos: "right-2 top-1/2 -translate-y-1/2" },
-    { dir: "down", Icon: ArrowDown, label: "Guardians", pos: "bottom-2 left-1/2 -translate-x-1/2" },
+    { dir: "up", Icon: ArrowUp, pos: "top-2 left-1/2 -translate-x-1/2" },
+    { dir: "left", Icon: ArrowLeft, pos: "left-2 top-1/2 -translate-y-1/2" },
+    { dir: "right", Icon: ArrowRight, pos: "right-2 top-1/2 -translate-y-1/2" },
+    { dir: "down", Icon: ArrowDown, pos: "bottom-2 left-1/2 -translate-x-1/2" },
   ];
 
   return (
     <div className="relative w-full max-w-[280px] mx-auto">
       <p className="text-center text-xs text-white/50 mb-2">
-        Swipe in any direction — multiple services in one gesture
+        {t.citizen.swipe.hint}
       </p>
       <p className="text-center text-[10px] text-white/30 mb-4">
-        Swipe again to deselect · Tap chips below to adjust
+        {t.citizen.swipe.hint2}
       </p>
 
       <div className="relative w-[280px] h-[280px] mx-auto">
-        {arrows.map(({ dir, Icon, label, pos }) => {
+        {arrows.map(({ dir, Icon, pos }) => {
           const service = directionMap[dir];
           const isSelected = selectedServices.includes(service);
           const isActive = activeDirection === dir;
-          const svc = SERVICES.find((s) => s.id === service)!;
+          const svc = services.find((s) => s.id === service)!;
+          const label = svc.swipeLabel ?? svc.name;
 
           return (
             <motion.div
@@ -152,7 +156,7 @@ export function SwipeGestures({ mode = "triage", onContinue }: SwipeGesturesProp
             >
               <span className="text-2xl">👆</span>
             </motion.div>
-            <p className="text-xs text-white/60 font-medium">Drag to triage</p>
+            <p className="text-xs text-white/60 font-medium">{t.citizen.swipe.drag}</p>
           </div>
 
           {flash && (
@@ -167,7 +171,7 @@ export function SwipeGestures({ mode = "triage", onContinue }: SwipeGesturesProp
 
       {/* Select / deselect chips */}
       <div className="flex flex-wrap gap-2 justify-center mt-5">
-        {SERVICES.map((svc) => {
+        {services.map((svc) => {
           const isSelected = selectedServices.includes(svc.id);
           return (
             <motion.button
@@ -196,13 +200,15 @@ export function SwipeGestures({ mode = "triage", onContinue }: SwipeGesturesProp
           onClick={handleContinue}
           className="mt-5 w-full py-3.5 rounded-2xl bg-emerald text-white font-bold text-sm shadow-lg shadow-emerald/30 hover:bg-emerald-glow transition-colors"
         >
-          Continue — {selectedServices.length} service{selectedServices.length > 1 ? "s" : ""} selected
+          {selectedServices.length > 1
+            ? interpolate(t.citizen.swipe.continuePlural, { count: selectedServices.length })
+            : interpolate(t.citizen.swipe.continue, { count: selectedServices.length })}
         </motion.button>
       )}
 
       {mode === "triage" && selectedServices.length === 0 && (
         <p className="text-center text-[10px] text-white/25 mt-4">
-          Select at least one service to continue
+          {t.citizen.swipe.selectOne}
         </p>
       )}
     </div>

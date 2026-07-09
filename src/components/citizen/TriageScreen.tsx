@@ -4,9 +4,11 @@ import { motion } from "framer-motion";
 import { AlertTriangle } from "lucide-react";
 import { SwipeGestures } from "./SwipeGestures";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useTranslation } from "@/hooks/use-translation";
 
 export function TriageScreen() {
   const { cancelAll } = useEmergencyStore();
+  const { t } = useTranslation();
 
   return (
     <div className="flex flex-col items-center pt-6 pb-4 h-full">
@@ -18,12 +20,12 @@ export function TriageScreen() {
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-alert/20 border border-alert/30 mb-3">
           <AlertTriangle className="w-3 h-3 text-alert-glow" />
           <span className="text-[10px] font-bold text-alert-glow uppercase tracking-wider">
-            Emergency Active
+            {t.citizen.triage.emergencyActive}
           </span>
         </div>
-        <h2 className="text-lg font-bold">Swipe Triage</h2>
+        <h2 className="text-lg font-bold">{t.citizen.triage.title}</h2>
         <p className="text-xs text-white/40 mt-1 max-w-[260px]">
-          Swipe to select services — no speaking required
+          {t.citizen.triage.subtitle}
         </p>
       </motion.div>
 
@@ -34,7 +36,7 @@ export function TriageScreen() {
         onClick={cancelAll}
         className="mt-6 text-[11px] text-white/30 hover:text-alert-glow transition-colors"
       >
-        Cancel emergency
+        {t.citizen.triage.cancel}
       </motion.button>
     </div>
   );

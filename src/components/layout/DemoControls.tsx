@@ -4,10 +4,12 @@ import { Play, RotateCcw, Siren } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEmergencyStore } from "@/store/emergency-store";
 import { useDemoSequence } from "@/hooks/use-demo-sequence";
+import { useTranslation } from "@/hooks/use-translation";
 
 export function DemoControls() {
   const { isDemoRunning, resetDemo, viewMode } = useEmergencyStore();
   const { runFullDemo, runCitizenEmergency } = useDemoSequence();
+  const { t } = useTranslation();
 
   return (
     <div className="flex flex-wrap items-center gap-1 sm:gap-2">
@@ -18,8 +20,8 @@ export function DemoControls() {
         size="xs"
       >
         <Play className="w-3 h-3 sm:w-4 sm:h-4" />
-        <span className="hidden sm:inline">Run Full Cinematic Demo</span>
-        <span className="sm:hidden">Demo</span>
+        <span className="hidden sm:inline">{t.header.fullDemo}</span>
+        <span className="sm:hidden">{t.header.fullDemoShort}</span>
       </Button>
 
       {viewMode === "citizen" && (
@@ -31,8 +33,8 @@ export function DemoControls() {
           className="h-7 sm:h-9 px-2 sm:px-3 text-[10px] sm:text-xs rounded-md sm:rounded-lg"
         >
           <Siren className="w-3 h-3 sm:w-4 sm:h-4" />
-          <span className="hidden sm:inline">Simulate Full Emergency</span>
-          <span className="sm:hidden">SOS</span>
+          <span className="hidden sm:inline">{t.header.emergencyDemo}</span>
+          <span className="sm:hidden">{t.header.emergencyShort}</span>
         </Button>
       )}
 
@@ -44,7 +46,7 @@ export function DemoControls() {
         className="h-7 sm:h-9 px-2 sm:px-3 text-[10px] sm:text-xs rounded-md sm:rounded-lg"
       >
         <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4" />
-        <span className="hidden min-[380px]:inline">Reset</span>
+        <span className="hidden min-[380px]:inline">{t.common.reset}</span>
       </Button>
     </div>
   );

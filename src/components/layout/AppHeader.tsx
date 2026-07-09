@@ -4,8 +4,12 @@ import { motion } from "framer-motion";
 import { ViewToggle } from "./ViewToggle";
 import { SpeedComparison } from "./SpeedComparison";
 import { DemoControls } from "./DemoControls";
+import { LanguageSwitcher } from "./LanguageSwitcher";
+import { useTranslation } from "@/hooks/use-translation";
 
 export function AppHeader() {
+  const { t } = useTranslation();
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -19,15 +23,16 @@ export function AppHeader() {
           </div>
           <div>
             <h1 className="text-sm sm:text-lg font-bold tracking-tight leading-tight">
-              SLÁN <span className="text-emerald-glow">Rescue</span>
+              {t.header.slan} <span className="text-emerald-glow">{t.header.title}</span>
             </h1>
-            <p className="text-[9px] sm:text-[11px] text-white/40 tracking-wide hidden xs:block sm:block">
-              Live Demo · Chosanta LTD
+            <p className="text-[9px] sm:text-[11px] text-white/40 tracking-wide hidden sm:block">
+              {t.header.subtitle}
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-3 justify-between lg:justify-end">
+          <LanguageSwitcher />
           <SpeedComparison />
           <ViewToggle />
           <DemoControls />

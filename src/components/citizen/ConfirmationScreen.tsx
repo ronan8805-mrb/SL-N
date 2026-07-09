@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X } from "lucide-react";
-import { SERVICES } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useTranslation } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 
 export function ConfirmationScreen() {
@@ -18,10 +18,11 @@ export function ConfirmationScreen() {
     cancelAll,
     finalizeConfirmationOnTimeout,
   } = useEmergencyStore();
+  const { t, services: allServices, interpolate } = useTranslation();
 
   const advancedRef = useRef(false);
 
-  const services = SERVICES.filter((s) => selectedServices.includes(s.id));
+  const services = allServices.filter((s) => selectedServices.includes(s.id));
   const acceptedServices = services.filter(
     (s) => serviceConfirmations[s.id] === true
   );
@@ -75,10 +76,10 @@ export function ConfirmationScreen() {
       className="flex flex-col items-center w-full px-4"
     >
       <p className="text-sm text-white/50 mb-2 text-center">
-        Confirm each service — false alarm prevention
+        {t.citizen.confirm.title}
       </p>
       <p className="text-[10px] text-white/30 mb-4 text-center">
-        Tap ✓ or ✗ · Unconfirmed services auto-confirm when timer ends
+        {t.citizen.confirm.subtitle}
       </p>
 
       <div className="relative w-32 h-32 mb-6">
@@ -116,7 +117,7 @@ export function ConfirmationScreen() {
           >
             {countdown}
           </motion.span>
-          <span className="text-[10px] text-white/40">seconds</span>
+          <span className="text-[10px] text-white/40">{t.common.seconds}</span>
         </div>
       </div>
 
@@ -135,7 +136,9 @@ export function ConfirmationScreen() {
                 <span className="text-2xl">{service.icon}</span>
                 <div>
                   <p className="font-semibold text-sm">{service.name}</p>
-                  <p className="text-[10px] text-white/40">ETA ~{service.eta} min</p>
+                  <p className="text-[10px] text-white/40">
+                    {interpolate(t.citizen.confirm.etaMin, { n: service.eta })}
+                  </p>
                 </div>
               </div>
 
@@ -185,7 +188,7 @@ export function ConfirmationScreen() {
           animate={{ opacity: 1 }}
           className="text-[11px] text-emerald-glow mt-4"
         >
-          All confirmed — preparing data packet…
+          {t.citizen.confirm.allConfirmed}
         </motion.p>
       )}
 
@@ -195,7 +198,7 @@ export function ConfirmationScreen() {
           animate={{ opacity: 1 }}
           className="text-[11px] text-white/40 mt-4"
         >
-          Auto-confirming swiped services…
+          {t.citizen.confirm.autoConfirm}
         </motion.p>
       )}
 
@@ -204,7 +207,7 @@ export function ConfirmationScreen() {
         onClick={cancelAll}
         className="mt-8 w-full max-w-sm py-4 rounded-2xl bg-alert/20 border-2 border-alert/50 text-alert-glow font-bold text-sm hover:bg-alert/30 transition-colors"
       >
-        CANCEL ALL
+        {t.citizen.confirm.cancelAll}
       </motion.button>
     </motion.div>
   );

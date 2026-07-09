@@ -1,9 +1,10 @@
 "use client";
 
 import { useEmergencyStore } from "@/store/emergency-store";
-import { getCommandCentreTheme } from "@/lib/command-centres";
+import { buildCommandCentreTheme } from "@/lib/command-centres";
 
 export function useCommandCentreTheme() {
   const commandCentre = useEmergencyStore((s) => s.commandCentre);
-  return getCommandCentreTheme(commandCentre);
+  const locale = useEmergencyStore((s) => s.locale);
+  return buildCommandCentreTheme(commandCentre, locale);
 }

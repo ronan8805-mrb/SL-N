@@ -3,8 +3,10 @@
 import { motion } from "framer-motion";
 import { Wifi, Battery, Signal } from "lucide-react";
 import { RescueButton } from "./RescueButton";
+import { useTranslation } from "@/hooks/use-translation";
 
 export function LockScreen() {
+  const { t } = useTranslation();
   const now = new Date();
   const time = now.toLocaleTimeString("en-IE", {
     hour: "2-digit",
@@ -44,7 +46,7 @@ export function LockScreen() {
       >
         <RescueButton />
         <p className="text-[11px] text-white/35 text-center max-w-[220px]">
-          One tap · Swipe triage · Help in seconds
+          {t.citizen.lock.tagline}
         </p>
       </motion.div>
 

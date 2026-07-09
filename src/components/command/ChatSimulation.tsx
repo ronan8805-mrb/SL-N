@@ -5,12 +5,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, Send } from "lucide-react";
 import { useEmergencyStore } from "@/store/emergency-store";
 import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
+import { useTranslation } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export function ChatSimulation() {
   const { chatMessages, incident, addChatMessage } = useEmergencyStore();
   const theme = useCommandCentreTheme();
+  const { t } = useTranslation();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,7 +33,7 @@ export function ChatSimulation() {
         <h3 className="text-sm font-semibold">{theme.chatTitle}</h3>
         {incident && (
           <span className={cn("text-[9px] font-bold ml-auto", theme.accentGlow)}>
-            CONNECTED
+            {t.common.connected}
           </span>
         )}
       </div>
@@ -42,7 +44,7 @@ export function ChatSimulation() {
       >
         {!incident ? (
           <p className="text-center text-white/30 text-sm py-8">
-            Chat activates when incident is received
+            {theme.chatWaiting}
           </p>
         ) : (
           <AnimatePresence>

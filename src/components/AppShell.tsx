@@ -7,9 +7,11 @@ import { AppHeader } from "@/components/layout/AppHeader";
 import { CitizenView } from "@/components/citizen/CitizenView";
 import { CommandDashboard } from "@/components/command/CommandDashboard";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useTranslation } from "@/hooks/use-translation";
 
 export function AppShell() {
   const { viewMode } = useEmergencyStore();
+  const { t } = useTranslation();
 
   return (
     <div className="min-h-screen gradient-mesh flex flex-col">
@@ -42,7 +44,7 @@ export function AppShell() {
       </main>
 
       <footer className="text-center py-4 text-[10px] text-white/20">
-        SLÁN Rescue Live Demo · Chosanta LTD · Public Safety Emergency Platform
+        {t.footer}
       </footer>
 
       <SonnerToaster

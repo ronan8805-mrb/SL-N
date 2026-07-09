@@ -3,23 +3,23 @@
 import { motion } from "framer-motion";
 import { useEmergencyStore } from "@/store/emergency-store";
 import {
-  COMMAND_CENTRE_CONFIG,
+  buildCommandCentreTheme,
   COMMAND_CENTRE_ORDER,
 } from "@/lib/command-centres";
 import { cn } from "@/lib/utils";
 
 export function CommandCentreToggle() {
-  const { commandCentre, setCommandCentre } = useEmergencyStore();
+  const { commandCentre, setCommandCentre, locale } = useEmergencyStore();
   const activeIndex = COMMAND_CENTRE_ORDER.indexOf(commandCentre);
-  const config = COMMAND_CENTRE_CONFIG[commandCentre];
+  const activeTheme = buildCommandCentreTheme(commandCentre, locale);
 
   return (
     <div className="glass rounded-xl sm:rounded-2xl p-0.5 sm:p-1 flex items-center gap-0.5 sm:gap-1 relative">
       <motion.div
         className={cn(
           "absolute top-0.5 bottom-0.5 sm:top-1 sm:bottom-1 rounded-lg sm:rounded-xl border",
-          config.indicatorBg,
-          config.indicatorBorder
+          activeTheme.indicatorBg,
+          activeTheme.indicatorBorder
         )}
         layout
         transition={{ type: "spring", stiffness: 400, damping: 30 }}
@@ -29,7 +29,7 @@ export function CommandCentreToggle() {
         }}
       />
       {COMMAND_CENTRE_ORDER.map((id) => {
-        const centre = COMMAND_CENTRE_CONFIG[id];
+        const centre = buildCommandCentreTheme(id, locale);
         const isActive = commandCentre === id;
         return (
           <button

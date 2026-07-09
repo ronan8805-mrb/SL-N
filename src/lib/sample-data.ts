@@ -1,4 +1,6 @@
-export type ServiceType = "ambulance" | "garda" | "fire" | "guardian";
+import { getServices, type Locale, type ServiceType } from "@/lib/i18n";
+
+export type { ServiceType };
 
 export interface Service {
   id: ServiceType;
@@ -8,46 +10,8 @@ export interface Service {
   color: string;
   direction: "up" | "left" | "right" | "down";
   eta: number;
+  swipeLabel?: string;
 }
-
-export const SERVICES: Service[] = [
-  {
-    id: "ambulance",
-    name: "Ambulance",
-    shortName: "EMS",
-    icon: "🚑",
-    color: "#ef4444",
-    direction: "up",
-    eta: 4,
-  },
-  {
-    id: "garda",
-    name: "Gardaí",
-    shortName: "Garda",
-    icon: "👮",
-    color: "#3b82f6",
-    direction: "left",
-    eta: 3,
-  },
-  {
-    id: "fire",
-    name: "Fire Brigade",
-    shortName: "Fire",
-    icon: "🚒",
-    color: "#f97316",
-    direction: "right",
-    eta: 5,
-  },
-  {
-    id: "guardian",
-    name: "Guardians",
-    shortName: "Guardian",
-    icon: "🛡️",
-    color: "#10b981",
-    direction: "down",
-    eta: 2,
-  },
-];
 
 export interface CitizenProfile {
   name: string;
@@ -87,36 +51,35 @@ export const INITIAL_LOCATION = {
   address: "Temple Bar, Dublin 2, Ireland",
 };
 
-export const CHAT_MESSAGES = [
-  { id: "1", sender: "system", text: "Emergency packet received", time: "14:32:01" },
-  { id: "2", sender: "citizen", text: "I can't breathe properly, chest feels tight", time: "14:32:03" },
-  { id: "3", sender: "operator", text: "Help is on the way Aoife. Ambulance ETA 4 minutes. Stay on the line.", time: "14:32:05" },
-  { id: "4", sender: "citizen", text: "Thank you, I'm at the corner near The Palace Bar", time: "14:32:08" },
-  { id: "5", sender: "operator", text: "We can see your exact location. Gardaí are also en route.", time: "14:32:12" },
-];
-
-export function getChatAvailableServices(selected: ServiceType[]): Service[] {
+export function getChatAvailableServices(
+  selected: ServiceType[],
+  locale: Locale
+): Service[] {
   const ids = new Set<ServiceType>(selected);
   ids.add("guardian");
-  return SERVICES.filter((s) => ids.has(s.id));
+  return getServices(locale).filter((s) => ids.has(s.id));
 }
 
-export const SERVICE_CHAT_REPLIES: Record<ServiceType, string> = {
-  ambulance:
-    "Ambulance dispatch received your packet. Medical team is reviewing your location and health profile.",
-  garda:
-    "Gardaí unit acknowledged. We're coordinating with other services on your incident.",
-  fire:
-    "Fire brigade notified. Your live data packet has been shared with the nearest station.",
-  guardian:
-    "Guardians alerted with your full emergency packet — location, health profile, and severity.",
-};
+export function getLocalizedCitizen(locale: Locale) {
+  const t = locale === "es"
+    ? {
+        conditions: "Asma leve",
+        allergies: "Penicilina",
+        medications: "Inhalador de salbutamol",
+        emergencyContact: "Seán Murphy — +353 87 123 4567",
+      }
+    : {
+        conditions: "Mild asthma",
+        allergies: "Penicillin",
+        medications: "Salbutamol inhaler",
+        emergencyContact: "Seán Murphy — +353 87 123 4567",
+      };
+  return { ...SAMPLE_CITIZEN, ...t, conditions: [t.conditions], allergies: [t.allergies], medications: [t.medications] };
+}
 
-export const PIPELINE_STAGES = [
-  { id: "received", label: "Received", icon: "📡" },
-  { id: "verified", label: "Verified", icon: "✓" },
-  { id: "dispatched", label: "Dispatched", icon: "🚀" },
-  { id: "en_route", label: "En Route", icon: "🚑" },
-  { id: "arrived", label: "Arrived", icon: "📍" },
-  { id: "resolved", label: "Resolved", icon: "✅" },
-];
+export function getLocalizedLocation(locale: Locale) {
+  return {
+    ...INITIAL_LOCATION,
+    address: locale === "es" ? "Temple Bar, Dublín 2, Irlanda" : INITIAL_LOCATION.address,
+  };
+}

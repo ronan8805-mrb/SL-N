@@ -46,7 +46,7 @@ export function CommandDashboard() {
           <div>
             <h2 className="text-lg font-bold tracking-tight">
               {theme.title}{" "}
-              <span className={theme.accent}>Command Centre</span>
+              <span className={theme.accent}>{theme.commandTitle}</span>
             </h2>
             <p className="text-[11px] text-white/40">{theme.subtitle}</p>
           </div>
@@ -101,7 +101,7 @@ export function CommandDashboard() {
         <ChatSimulation />
         <div className="glass rounded-2xl p-4">
           <h3 className={cn("text-sm font-semibold mb-3", theme.accent)}>
-            {theme.title} Response Metrics
+            {theme.metricsTitle}
           </h3>
           <div className="grid grid-cols-3 gap-4">
             {theme.metrics.map((metric) => (

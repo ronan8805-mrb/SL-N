@@ -1,9 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { PIPELINE_STAGES } from "@/lib/sample-data";
 import { useEmergencyStore, type PipelineStage } from "@/store/emergency-store";
 import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
+import { useTranslation } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 
 const stageOrder: PipelineStage[] = [
@@ -18,6 +18,7 @@ const stageOrder: PipelineStage[] = [
 export function StatusPipeline() {
   const { pipelineStage, incident } = useEmergencyStore();
   const theme = useCommandCentreTheme();
+  const { pipelineStages } = useTranslation();
   const currentIndex = stageOrder.indexOf(pipelineStage);
 
   return (
@@ -41,7 +42,7 @@ export function StatusPipeline() {
         />
 
         <div className="relative flex justify-between">
-          {PIPELINE_STAGES.map((stage, i) => {
+          {pipelineStages.map((stage, i) => {
             const isActive = i <= currentIndex && incident;
             const isCurrent = stageOrder[i] === pipelineStage;
 

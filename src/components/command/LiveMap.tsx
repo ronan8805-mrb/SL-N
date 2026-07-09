@@ -5,12 +5,14 @@ import { motion } from "framer-motion";
 import { MapPin, Navigation } from "lucide-react";
 import { useEmergencyStore } from "@/store/emergency-store";
 import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
+import { useTranslation } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 
 export function LiveMap() {
   const { location, incident, updateLocation, pipelineStage } =
     useEmergencyStore();
   const theme = useCommandCentreTheme();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!incident) return;
@@ -36,7 +38,7 @@ export function LiveMap() {
               theme.liveBadge
             )}
           >
-            LIVE
+            {t.common.live}
           </motion.span>
         )}
       </div>

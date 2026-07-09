@@ -17,8 +17,13 @@ import {
   Shield,
 } from "lucide-react";
 import { toast } from "sonner";
-import { SAMPLE_CITIZEN, getChatAvailableServices } from "@/lib/sample-data";
+import {
+  getLocalizedCitizen,
+  getLocalizedLocation,
+  getChatAvailableServices,
+} from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useTranslation } from "@/hooks/use-translation";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { VoiceNotePlayer } from "@/components/shared/VoiceNotePlayer";
@@ -51,10 +56,14 @@ export function DataPacketPreview() {
     eta,
     responseTime,
   } = useEmergencyStore();
+  const { t, locale, interpolate } = useTranslation();
+
+  const citizen = useMemo(() => getLocalizedCitizen(locale), [locale]);
+  const localizedLocation = useMemo(() => getLocalizedLocation(locale), [locale]);
 
   const availableChatServices = useMemo(
-    () => getChatAvailableServices(selectedServices),
-    [selectedServices]
+    () => getChatAvailableServices(selectedServices, locale),
+    [selectedServices, locale]
   );
 
   const filteredChatMessages = useMemo(
@@ -119,7 +128,7 @@ export function DataPacketPreview() {
   const handleNotifyGuardians = () => {
     if (guardiansNotified) return;
     notifyGuardians();
-    toast.success("Guardians notified with full emergency packet");
+    toast.success(t.demo.guardiansToast);
   };
 
   return (
@@ -137,9 +146,9 @@ export function DataPacketPreview() {
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-emerald-glow" />
             <div>
-              <p className="text-xs font-semibold text-emerald-glow">Help is on the way</p>
+              <p className="text-xs font-semibold text-emerald-glow">{t.citizen.data.helpOnWay}</p>
               <p className="text-[10px] text-white/40">
-                ETA ~{Math.ceil(eta)} min · Update packet anytime below
+                {interpolate(t.citizen.data.updatePacket, { n: Math.ceil(eta) })}
               </p>
             </div>
           </div>
@@ -148,20 +157,20 @@ export function DataPacketPreview() {
             className="text-[10px] text-emerald-glow font-medium flex items-center gap-1 hover:underline"
           >
             <ChevronLeft className="w-3 h-3" />
-            ETA view
+            {t.citizen.data.etaView}
           </button>
         </motion.div>
       ) : (
         <div className="text-center">
           <p className="text-sm text-emerald-glow font-medium">
-            Transmitting emergency data packet…
+            {t.citizen.data.transmitting}
           </p>
           <motion.p
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
             className="text-[11px] text-white/40 mt-1"
           >
-            Auto-dispatching in {autoDispatchCountdown}s
+            {interpolate(t.citizen.data.autoDispatch, { n: autoDispatchCountdown })}
           </motion.p>
         </div>
       )}
@@ -181,14 +190,14 @@ export function DataPacketPreview() {
           <div className="absolute inset-0 bg-gradient-to-t from-navy-card/80 to-transparent" />
           <div className="absolute bottom-2 left-3 flex items-center gap-2">
             <MapPin className="w-3 h-3 text-emerald-glow" />
-            <span className="text-[10px] text-white/70">{location.address}</span>
+            <span className="text-[10px] text-white/70">{localizedLocation.address}</span>
           </div>
           <motion.span
             animate={{ opacity: [1, 0.3, 1] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
             className="absolute top-2 right-3 text-[9px] text-emerald font-bold uppercase tracking-wider"
           >
-            Live GPS
+            {t.citizen.data.liveGps}
           </motion.span>
         </div>
         <div className="px-3 py-2 flex justify-between text-[10px] text-white/40 font-mono">
@@ -201,7 +210,7 @@ export function DataPacketPreview() {
       <div className="glass rounded-2xl p-3">
         <div className="flex items-center gap-2 mb-2">
           <Video className="w-4 h-4 text-emerald-glow" />
-          <span className="text-xs font-medium">Video for Emergency Services</span>
+          <span className="text-xs font-medium">{t.citizen.data.videoTitle}</span>
         </div>
         <div
           className="relative h-24 rounded-xl bg-gradient-to-br from-navy-light to-navy overflow-hidden cursor-pointer"
@@ -220,7 +229,7 @@ export function DataPacketPreview() {
             </motion.div>
           </div>
           <span className="absolute top-2 left-2 text-[9px] bg-alert/80 px-1.5 py-0.5 rounded font-bold">
-            {isPlayingVideo ? "REC" : "TAP TO RECORD"}
+            {isPlayingVideo ? t.citizen.data.rec : t.citizen.data.tapRecord}
           </span>
         </div>
       </div>
@@ -240,12 +249,12 @@ export function DataPacketPreview() {
       <div className="glass rounded-2xl p-3">
         <div className="flex items-center gap-2 mb-2">
           <MessageSquare className="w-4 h-4 text-emerald-glow" />
-          <span className="text-xs font-medium">Private Message to Emergency Services</span>
+          <span className="text-xs font-medium">{t.citizen.data.privateMessage}</span>
         </div>
         <textarea
           value={privateMessage}
           onChange={(e) => setPrivateMessage(e.target.value)}
-          placeholder="Describe your situation… (optional)"
+          placeholder={t.citizen.data.privatePlaceholder}
           rows={2}
           className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder:text-white/30 resize-none focus:outline-none focus:border-emerald/40"
         />
@@ -255,20 +264,20 @@ export function DataPacketPreview() {
       <div className="glass rounded-2xl p-3">
         <div className="flex items-center gap-2 mb-3">
           <Heart className="w-4 h-4 text-alert-glow" />
-          <span className="text-xs font-medium">Health Profile</span>
+          <span className="text-xs font-medium">{t.citizen.data.healthProfile}</span>
         </div>
         <div className="grid grid-cols-2 gap-2 text-[11px]">
           <div className="bg-white/5 rounded-lg p-2">
-            <p className="text-white/40 text-[9px]">Name</p>
-            <p className="font-medium">{SAMPLE_CITIZEN.name}</p>
+            <p className="text-white/40 text-[9px]">{t.citizen.data.name}</p>
+            <p className="font-medium">{citizen.name}</p>
           </div>
           <div className="bg-white/5 rounded-lg p-2">
-            <p className="text-white/40 text-[9px]">Blood Type</p>
-            <p className="font-medium text-alert-glow">{SAMPLE_CITIZEN.bloodType}</p>
+            <p className="text-white/40 text-[9px]">{t.citizen.data.bloodType}</p>
+            <p className="font-medium text-alert-glow">{citizen.bloodType}</p>
           </div>
           <div className="bg-white/5 rounded-lg p-2 col-span-2">
-            <p className="text-white/40 text-[9px]">Conditions</p>
-            <p className="font-medium">{SAMPLE_CITIZEN.conditions.join(", ")}</p>
+            <p className="text-white/40 text-[9px]">{t.citizen.data.conditions}</p>
+            <p className="font-medium">{citizen.conditions.join(", ")}</p>
           </div>
         </div>
       </div>
@@ -278,7 +287,7 @@ export function DataPacketPreview() {
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Activity className="w-4 h-4 text-emerald-glow" />
-            <span className="text-xs font-medium">Severity Level</span>
+            <span className="text-xs font-medium">{t.citizen.data.severity}</span>
           </div>
           <span
             className={cn(
@@ -290,7 +299,7 @@ export function DataPacketPreview() {
           </span>
         </div>
         <Slider value={severity} onChange={setSeverity} min={1} max={10} />
-        <p className="text-[9px] text-white/30 mt-2">Adjust anytime — even while waiting for help</p>
+        <p className="text-[9px] text-white/30 mt-2">{t.citizen.data.severityHint}</p>
       </div>
 
       {/* Notify Guardians */}
@@ -310,12 +319,12 @@ export function DataPacketPreview() {
         </div>
         <div className="text-left flex-1">
           <p className="text-xs font-semibold">
-            {guardiansNotified ? "Guardians Notified ✓" : "Notify Guardians"}
+            {guardiansNotified ? t.citizen.data.guardiansNotified : t.citizen.data.notifyGuardians}
           </p>
           <p className="text-[10px] text-white/40">
             {guardiansNotified
-              ? "Full packet sent — location, health & severity"
-              : "Forgot to swipe? Send rich packet data instantly"}
+              ? t.citizen.data.notifiedHint
+              : t.citizen.data.notifyHint}
           </p>
         </div>
       </motion.button>
@@ -325,7 +334,7 @@ export function DataPacketPreview() {
         <div className="flex items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4 text-emerald-glow" />
-            <span className="text-xs font-medium">Chat</span>
+            <span className="text-xs font-medium">{t.citizen.data.chat}</span>
           </div>
           <div className="relative">
             <select
@@ -345,9 +354,9 @@ export function DataPacketPreview() {
 
         {activeChatService && (
           <p className="text-[10px] text-white/35 mb-2">
-            Speaking with {activeChatService.name}
+            {interpolate(t.citizen.data.speakingWith, { service: activeChatService.name })}
             {!selectedServices.includes(activeChatService.id) && activeChatService.id === "guardian"
-              ? " · always available"
+              ? t.citizen.data.guardianAlways
               : ""}
           </p>
         )}
@@ -355,7 +364,9 @@ export function DataPacketPreview() {
         <div className="bg-white/5 rounded-xl p-2 max-h-32 overflow-y-auto scrollbar-thin space-y-2 mb-2">
           {filteredChatMessages.length === 0 ? (
             <p className="text-[10px] text-white/30 text-center py-3">
-              Send a message to {activeChatService?.name ?? "this service"}
+              {interpolate(t.citizen.data.sendMessage, {
+                service: activeChatService?.name ?? "this service",
+              })}
             </p>
           ) : (
             filteredChatMessages.map((msg) => (
@@ -382,7 +393,9 @@ export function DataPacketPreview() {
             value={chatInput}
             onChange={(e) => setChatInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSendChat()}
-            placeholder={`Message ${activeChatService?.shortName ?? "service"}…`}
+            placeholder={interpolate(t.citizen.data.messagePlaceholder, {
+              service: activeChatService?.shortName ?? "service",
+            })}
             className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-emerald/40"
           />
           <button
@@ -409,7 +422,7 @@ export function DataPacketPreview() {
             />
           </div>
           <p className="text-[11px] text-white/50">
-            Packet sending automatically — help will be dispatched shortly
+            {t.citizen.data.packetSending}
           </p>
         </motion.div>
       ) : (
@@ -418,7 +431,7 @@ export function DataPacketPreview() {
           variant="outline"
           className="w-full"
         >
-          Back to ETA Countdown
+          {t.citizen.data.backToEta}
         </Button>
       )}
     </motion.div>

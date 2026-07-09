@@ -3,10 +3,12 @@
 import { motion } from "framer-motion";
 import { Shield, Smartphone } from "lucide-react";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useTranslation } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 
 export function ViewToggle() {
   const { viewMode, setViewMode } = useEmergencyStore();
+  const { t } = useTranslation();
   const isCitizen = viewMode === "citizen";
 
   return (
@@ -28,8 +30,8 @@ export function ViewToggle() {
         )}
       >
         <Smartphone className="w-3 h-3 sm:w-4 sm:h-4" />
-        <span className="hidden sm:inline">Citizen View</span>
-        <span className="sm:hidden">Citizen</span>
+        <span className="hidden sm:inline">{t.header.citizenView}</span>
+        <span className="sm:hidden">{t.header.citizenShort}</span>
       </button>
       <button
         onClick={() => setViewMode("command")}
@@ -39,8 +41,8 @@ export function ViewToggle() {
         )}
       >
         <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
-        <span className="hidden sm:inline">Command Dashboard</span>
-        <span className="sm:hidden">Command</span>
+        <span className="hidden sm:inline">{t.header.commandView}</span>
+        <span className="sm:hidden">{t.header.commandShort}</span>
       </button>
     </div>
   );

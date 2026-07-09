@@ -10,8 +10,8 @@ import {
   Navigation,
   MapPinned,
 } from "lucide-react";
-import { SERVICES } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
+import { useTranslation } from "@/hooks/use-translation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -50,8 +50,9 @@ export function DispatchSuccess() {
     resetDemo,
     goToCommunications,
   } = useEmergencyStore();
+  const { t, services: allServices } = useTranslation();
 
-  const services = SERVICES.filter(
+  const services = allServices.filter(
     (s) =>
       selectedServices.includes(s.id) ||
       (selectedServices.length === 0 && ["ambulance", "garda"].includes(s.id))
@@ -150,10 +151,10 @@ export function DispatchSuccess() {
           )}
         >
           {arrivalPhase === "arrived"
-            ? "ARRIVED"
+            ? t.citizen.dispatch.arrived
             : arrivalPhase === "arriving"
-            ? "ARRIVING"
-            : "Help Dispatched"}
+            ? t.citizen.dispatch.arriving
+            : t.citizen.dispatch.helpDispatched}
         </motion.h2>
       </AnimatePresence>
 
@@ -164,15 +165,15 @@ export function DispatchSuccess() {
       >
         {arrivalPhase === "arrived" ? (
           <span className="text-emerald-glow font-semibold">
-            Emergency services are on scene — you are safe
+            {t.citizen.dispatch.onScene}
           </span>
         ) : arrivalPhase === "arriving" ? (
           <span className="text-amber-400/90 font-medium">
-            Units are almost at your location…
+            {t.citizen.dispatch.almostThere}
           </span>
         ) : (
           <>
-            Emergency services notified in{" "}
+            {t.citizen.dispatch.notifiedIn}{" "}
             <span className="text-emerald-glow font-bold">
               {responseTime > 0 ? responseTime.toFixed(1) : "2.1"}s
             </span>
@@ -195,7 +196,7 @@ export function DispatchSuccess() {
           <>
             <div className="flex items-center justify-center gap-2 mb-3">
               <Clock className="w-4 h-4 text-emerald-glow" />
-              <span className="text-sm font-medium">ETA Countdown</span>
+              <span className="text-sm font-medium">{t.citizen.dispatch.etaCountdown}</span>
             </div>
             <motion.p
               key={displayEtaMinutes}
@@ -204,7 +205,7 @@ export function DispatchSuccess() {
               className="text-5xl font-black text-white tabular-nums"
             >
               {displayEtaMinutes}
-              <span className="text-lg text-white/40 ml-1">min</span>
+              <span className="text-lg text-white/40 ml-1">{t.common.min}</span>
             </motion.p>
           </>
         )}
@@ -214,15 +215,15 @@ export function DispatchSuccess() {
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ repeat: Infinity, duration: 1.5 }}
           >
-            <p className="text-4xl font-black text-amber-400 tracking-widest">ARRIVING</p>
-            <p className="text-xs text-white/40 mt-2">Less than 1 minute away</p>
+            <p className="text-4xl font-black text-amber-400 tracking-widest">{t.citizen.dispatch.arrivingBadge}</p>
+            <p className="text-xs text-white/40 mt-2">{t.citizen.dispatch.lessThanMin}</p>
           </motion.div>
         )}
 
         {arrivalPhase === "arrived" && (
           <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }}>
-            <p className="text-4xl font-black text-emerald-glow tracking-widest">ARRIVED</p>
-            <p className="text-xs text-emerald-glow/70 mt-2">On scene · Assistance in progress</p>
+            <p className="text-4xl font-black text-emerald-glow tracking-widest">{t.citizen.dispatch.arrived}</p>
+            <p className="text-xs text-emerald-glow/70 mt-2">{t.citizen.dispatch.onSceneProgress}</p>
             <motion.div
               className="mt-3 h-1 bg-emerald/20 rounded-full overflow-hidden"
               initial={{ opacity: 0 }}
@@ -269,10 +270,10 @@ export function DispatchSuccess() {
               )}
             >
               {arrivalPhase === "arrived"
-                ? "ON SCENE"
+                ? t.citizen.dispatch.onSceneBadge
                 : arrivalPhase === "arriving"
-                ? "ARRIVING"
-                : "EN ROUTE"}
+                ? t.citizen.dispatch.arrivingBadge
+                : t.citizen.dispatch.enRoute}
             </motion.span>
           </motion.div>
         ))}
@@ -289,10 +290,10 @@ export function DispatchSuccess() {
             className="w-full py-4 font-semibold bg-white/10 border border-emerald/30 hover:bg-emerald/20 text-emerald-glow"
           >
             <MessageSquare className="w-5 h-5" />
-            Communicate with Emergency Services
+            {t.citizen.dispatch.communicate}
           </Button>
           <p className="text-[10px] text-white/35 mt-2">
-            Chat, send voice notes, record video, or adjust severity while you wait
+            {t.citizen.dispatch.communicateHint}
           </p>
         </motion.div>
       )}
@@ -304,12 +305,12 @@ export function DispatchSuccess() {
       >
         <Shield className="w-3 h-3" />
         {arrivalPhase === "arrived"
-          ? "Help has arrived — operators remain connected"
-          : "Stay calm — operators can see your location and health data"}
+          ? t.citizen.dispatch.helpArrived
+          : t.citizen.dispatch.stayCalm}
       </motion.div>
 
       <Button onClick={resetDemo} variant="outline" size="sm">
-        Start New Demo
+        {t.citizen.dispatch.startNew}
       </Button>
     </motion.div>
   );

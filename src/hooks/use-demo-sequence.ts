@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useEmergencyStore } from "@/store/emergency-store";
-import { CHAT_MESSAGES } from "@/lib/sample-data";
+import { getDemoChatMessages, getTranslations } from "@/lib/i18n";
 import { delay } from "@/lib/utils";
 import { toast } from "sonner";
 
@@ -15,7 +15,11 @@ export function useDemoSequence() {
     store.resetDemo();
     store.setDemoSpeed("slan");
 
-    toast.info("Starting cinematic demo sequence…", { duration: 2000 });
+    const locale = useEmergencyStore.getState().locale;
+    const t = getTranslations(locale);
+    const demoMessages = getDemoChatMessages(locale);
+
+    toast.info(t.demo.starting, { duration: 2000 });
 
     store.setViewMode("citizen");
     await delay(800);
@@ -40,13 +44,13 @@ export function useDemoSequence() {
 
     store.setCitizenStep("data");
     store.setIsRecording(true);
-    store.setPrivateMessage("Chest feels tight, mild asthma — need inhaler");
+    store.setPrivateMessage(t.demo.privateMsg);
     await delay(2000);
     store.setIsRecording(false);
-    store.addCitizenChatMessage("I can't breathe properly");
+    store.addCitizenChatMessage(t.demo.citizenMsg);
     await delay(3500); // wait for auto-dispatch
 
-    toast.success("Help dispatched in 2.1 seconds!", { duration: 3000 });
+    toast.success(t.demo.dispatched, { duration: 3000 });
     await delay(3000);
 
     store.goToCommunications();
@@ -60,7 +64,7 @@ export function useDemoSequence() {
     store.setPipelineStage("verified");
     await delay(800);
 
-    for (const msg of CHAT_MESSAGES) {
+    for (const msg of demoMessages) {
       store.addChatMessage(msg.sender, msg.text);
       await delay(700);
     }
@@ -71,7 +75,7 @@ export function useDemoSequence() {
     await delay(1000);
     store.setPipelineStage("resolved");
 
-    toast.success("Demo complete — incident resolved", { duration: 4000 });
+    toast.success(t.demo.complete, { duration: 4000 });
     store.setIsDemoRunning(false);
   }, [store]);
 
@@ -92,7 +96,8 @@ export function useDemoSequence() {
     store.confirmService("garda", true);
     await delay(1000);
     store.setCitizenStep("data");
-    store.setPrivateMessage("Emergency — need immediate assistance");
+    const t = getTranslations(useEmergencyStore.getState().locale);
+    store.setPrivateMessage(t.demo.emergencyMsg);
     await delay(3500); // wait for auto-dispatch
     store.setIsDemoRunning(false);
   }, [store]);

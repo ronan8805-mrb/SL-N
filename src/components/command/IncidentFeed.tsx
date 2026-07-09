@@ -2,14 +2,16 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Clock } from "lucide-react";
-import { SERVICES } from "@/lib/sample-data";
 import { useEmergencyStore } from "@/store/emergency-store";
 import { useCommandCentreTheme } from "@/hooks/use-command-centre-theme";
+import { useTranslation } from "@/hooks/use-translation";
+import { getLocaleCode } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 export function IncidentFeed() {
   const { incident, pipelineStage } = useEmergencyStore();
   const theme = useCommandCentreTheme();
+  const { t, services, pipelineStages, locale } = useTranslation();
 
   const feedItems = incident
     ? [
@@ -18,7 +20,7 @@ export function IncidentFeed() {
           title: `${incident.citizenName} — ${theme.incidentSuffix}`,
           severity: incident.severity,
           services: incident.services,
-          time: incident.timestamp.toLocaleTimeString("en-IE"),
+          time: incident.timestamp.toLocaleTimeString(getLocaleCode(locale)),
           status: pipelineStage,
         },
       ]
@@ -39,7 +41,7 @@ export function IncidentFeed() {
           )}
         >
           <span className={cn("w-1.5 h-1.5 rounded-full", theme.liveDot)} />
-          LIVE
+          {t.common.live}
         </motion.span>
       </div>
 
@@ -52,8 +54,8 @@ export function IncidentFeed() {
               className="text-center py-12 text-white/30 text-sm"
             >
               <AlertTriangle className={cn("w-8 h-8 mx-auto mb-3 opacity-30", theme.accent)} />
-              {theme.feedEmpty}
-              <p className="text-[11px] mt-2">Run the citizen demo to see live feed</p>
+              {theme.noIncident}
+              <p className="text-[11px] mt-2">{theme.feedHint}</p>
             </motion.div>
           ) : (
             feedItems.map((item) => (
@@ -80,13 +82,13 @@ export function IncidentFeed() {
                         : "bg-yellow-500/20 text-yellow-400"
                     )}
                   >
-                    SEV {item.severity}
+                    {t.common.sev} {item.severity}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2 mb-2">
                   {item.services.map((sid) => {
-                    const svc = SERVICES.find((s) => s.id === sid);
+                    const svc = services.find((s) => s.id === sid);
                     return svc ? (
                       <span key={sid} className="text-sm" title={svc.name}>
                         {svc.icon}
@@ -101,7 +103,8 @@ export function IncidentFeed() {
                     {item.time}
                   </span>
                   <span className={cn("font-medium uppercase", theme.accentGlow)}>
-                    {item.status.replace("_", " ")}
+                    {pipelineStages.find((s) => s.id === item.status)?.label ??
+                      item.status.replace("_", " ")}
                   </span>
                 </div>
               </motion.div>

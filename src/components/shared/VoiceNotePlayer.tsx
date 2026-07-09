@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Mic, Play, Square } from "lucide-react";
 import { VOICE_NOTE_SRC } from "@/lib/media";
+import { useTranslation } from "@/hooks/use-translation";
 import { cn } from "@/lib/utils";
 
 interface VoiceNotePlayerProps {
@@ -23,6 +24,7 @@ export function VoiceNotePlayer({
   showRecordButton = false,
   compact = false,
 }: VoiceNotePlayerProps) {
+  const { t } = useTranslation();
   const audioRef = useRef<HTMLAudioElement>(null);
   const [duration, setDuration] = useState("0:00");
   const [progress, setProgress] = useState(0);
@@ -73,7 +75,9 @@ export function VoiceNotePlayer({
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 text-xs">
           <Mic className="w-3 h-3 text-emerald-glow" />
-          <span className={compact ? "" : "text-xs font-medium"}>Voice Note</span>
+          <span className={compact ? "" : "text-xs font-medium"}>
+            {t.citizen.data.voiceNote}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           {showRecordButton && onRecordingChange && (
@@ -86,14 +90,14 @@ export function VoiceNotePlayer({
                   : "bg-white/10 text-white/60"
               )}
             >
-              {isRecording ? "Recording…" : "Record"}
+              {isRecording ? t.common.recording : t.common.record}
             </button>
           )}
           <button
             onClick={togglePlay}
             className="text-[10px] text-emerald-glow font-medium"
           >
-            {isPlaying ? "Stop" : "Play"}
+            {isPlaying ? t.common.stop : t.common.play}
           </button>
         </div>
       </div>
